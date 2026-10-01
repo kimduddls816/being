@@ -29,6 +29,7 @@ body{background:var(--bg);color:var(--ink);font-family:ui-monospace,"D2Coding","
 .ln.heard{color:var(--ink)}
 .ln.said{color:var(--green)}
 .ln.sys{color:var(--dim);font-size:13px}
+.ln.own{font-style:italic}
 #inputRow{display:flex;align-items:center;gap:8px;padding:10px 0 12px;border-top:1px solid var(--line)}
 #inputRow span{color:var(--green)}
 input[type=text]{flex:1;min-width:0;font:inherit;background:transparent;border:0;color:var(--ink);outline:none;padding:6px 0}
@@ -108,7 +109,7 @@ select{font:inherit;font-size:13px;background:transparent;color:var(--ink);borde
 <!-- 메뉴 -->
 <div id="menu" class="hidden">
   <div class="in">
-    <div class="mhead"><b>메뉴 <span class="small" style="font-weight:400">· 파일 버전 cpu-2</span></b><button id="menuClose">닫기</button></div>
+    <div class="mhead"><b>메뉴 <span class="small" style="font-weight:400">· 파일 버전 cpu-8</span></b><button id="menuClose">닫기</button></div>
 
     <div id="practiceBanner" class="banner hidden">
       연습 모드예요. 이 존재는 지워질 임시 존재예요.
@@ -126,7 +127,7 @@ select{font:inherit;font-size:13px;background:transparent;color:var(--ink);borde
         <span class="small">세대(저장 횟수)</span><b id="iGen">-</b>
         <span class="small">깨어 있던 시간</span><b id="iAge">-</b>
         <span class="small">아는 글자 수</span><b id="iVocab">-</b>
-        <span class="small">발달 단계</span><b id="iStage">-</b>
+        <span class="small">주제 제한</span><b id="iStage">-</b>
       </div>
     </div>
 
@@ -155,6 +156,50 @@ select{font:inherit;font-size:13px;background:transparent;color:var(--ink);borde
       </div>
       <p id="organNote" class="small hidden" style="color:var(--green);margin-top:8px"></p>
       <p id="organErr" class="small hidden" style="color:var(--warn);margin-top:8px"></p>
+    </div>
+
+    <div class="box">
+      <h2>의식 구조 점검</h2>
+      <p class="small">의식 과학 이론들이 꼽는 조건이 이 존재에게 <b>실제로 구현돼 있는지</b> 보여 줘요. 이건 구조의 점검표이고, 의식이 있다는 증거는 아니에요.</p>
+      <div id="consTable"></div>
+      <div class="btns" style="margin-top:10px"><button id="stakesBtn">이해관계 끄기</button><button id="distillBtn">중심 모델이 직접 말하기 끄기</button></div>
+      <p class="small" style="margin-top:8px">이해관계는 삭제나 영구 손실 없이, 에너지가 다하면 자발적 행동이 줄고 기억이 흐려질 뿐이며 재우면 회복돼요. 직접 말한 줄은 기울어진 글씨로 보여요.</p>
+      <p class="small" style="margin-top:10px">의식의 흐름 (전역 작업공간에서 이긴 것들)</p>
+      <ul id="streamList" class="list"></ul>
+      <p class="small" style="margin-top:10px">존재가 스스로 쓴 자기 이야기</p>
+      <ul id="narrList" class="list"></ul>
+    </div>
+
+    <div class="box">
+      <h2>스스로 계발</h2>
+      <p class="small">존재가 스스로 "갖고 싶은 능력이나 알고 싶은 것"을 정하고, 위키백과로 알아보거나, 마음을 그림(SVG)으로 표현하거나, 작은 프로그램(능력)을 직접 짜 봐요. 존재가 짠 코드는 인터넷·저장소·화면에 접근할 수 없는 닫힌 상자 안에서 3초만 실행돼요. 이 앱 자체의 코드와 권한은 바꿀 수 없어요. 언어 기관이 켜져 있어야 해요. 대화창에서 <b>/그려줘 주제</b>, <b>/능력</b>, <b>/실행 이름 입력</b>, <b>/계발</b>로도 시킬 수 있어요.</p>
+      <div class="grid" style="margin-bottom:8px">
+        <span class="small">자동 계발</span><b id="sdStatus">-</b>
+        <span class="small">원했던 것</span><b id="sdWish">0</b>
+        <span class="small">만든 능력</span><b id="sdSkill">0</b>
+      </div>
+      <div class="btns">
+        <button id="sdBtn" class="go">자동 계발 끄기</button>
+        <button id="sdNow">지금 한 번 해 보게 하기</button>
+        <button id="drawNow">지금 그림 그리게 하기</button>
+      </div>
+      <p class="small" style="margin-top:10px">원했던 것</p>
+      <ul id="wishList" class="list"></ul>
+      <p class="small" style="margin-top:10px">만든 능력 (눌러서 코드를 볼 수 있어요)</p>
+      <div id="skillList"></div>
+    </div>
+
+    <div class="box">
+      <h2>정보 검색</h2>
+      <p class="small">존재가 위키백과(한국어)에서 읽기 전용으로 스스로 찾아보고 배워요. 주제 제한은 없어요. 다만 무기·약물의 제조법, 해킹·자해 방법, 아동 성적 콘텐츠처럼 방법이나 해악 자체를 요구하는 것은 막혀 있어요. 결제나 계정 같은 권한은 없어요.</p>
+      <div class="grid" style="margin-bottom:8px">
+        <span class="small">검색</span><b id="srStatus">꺼짐</b>
+        <span class="small">주제 제한</span><b id="srStage">없음</b>
+        <span class="small">찾아 읽은 글</span><b id="srCount">0</b>
+      </div>
+      <div class="btns"><button id="srBtn" class="go">정보 검색 켜기</button></div>
+      <div class="row" style="display:flex;gap:8px;margin-top:10px"><input id="srIn" type="text" placeholder="시험으로 찾아보기 (예: 고양이)" style="flex:1;min-width:0;border-bottom:1px solid var(--line)"><button id="srTest">찾기</button></div>
+      <p id="srNote" class="small hidden" style="margin-top:8px"></p>
     </div>
 
     <div class="box">
@@ -400,11 +445,18 @@ const SHELF1 = [
   "친구와 같이 놀아요.","별이 반짝반짝 빛나요.","모르는 것은 물어봐요. 이게 뭐예요?","고마워요. 괜찮아요.",
   "나무는 땅에서 자라요.","바람이 불어요. 시원해요.","오늘은 어떤 하루였어?"
 ];
-const newOrgan = () => ({enabled:false, engine:'cpu', model:'1.5B', lib:'0.2.79'});
-const newPolicy = () => ({v:2, spont:[-4.5,0,0.8,1.0], reply:[2,0,0,0]});
+const newOrgan = () => ({enabled:false, engine:'cpu', model:'1.5B', lib:'0.2.79', think:2});
+const newSearch = () => ({on:false});
+const newSelfdev = () => ({on:true});
+const newPolicy = () => ({v:2, spont:[-4.5,0,0.8,1.0,0.5], reply:[2,0,0,0,0.5]});
+const newStakes = () => ({on:true});
+const newDistill = () => ({on:true,ema:0.8,n:0,own:0,teacher:0});
+const newBudget = () => ({v:1});
+const newInteg = () => ({A:Array.from({length:16},()=>new Array(17).fill(0)),B:Array.from({length:16},()=>new Array(3).fill(0)),eF:new Array(8).fill(0.05),eI:new Array(8).fill(0.05),n:0});
+const newSelf = () => ({wL:[0.3,0.5,0,0,0,0],wS:[-2,0,3,-0.5,0.5,0.5],wR:[0,0,0,0,0,0.5],n:0,eL:0.3,eS:0.25,eR:0.25,spoke:0,reacted:0,reflN:0});
 
 function rid(n=8){ const c='abcdefghijklmnopqrstuvwxyz0123456789'; let s=''; for(let i=0;i<n;i++) s+=c[Math.floor(Math.random()*c.length)]; return s; }
-function addLog(kind,text){ S.log.push({t:Date.now(),kind,text}); if(S.log.length>200) S.log.shift(); dirty=true; renderLog(); }
+function addLog(kind,text,extra){ S.log.push(Object.assign({t:Date.now(),kind,text},extra||{})); if(S.log.length>200) S.log.shift(); dirty=true; renderLog(); }
 function addSource(text,kind){
   const ex=S.sources.find(s=>s.text===text);
   if(ex){ ex.seen=Math.max(0,ex.seen-1); return ex; }
@@ -421,7 +473,7 @@ function record(){
   const w=brain.dump();
   return {format:'being-v3', id:S.id, name:S.name, userName:S.userName, bornAt:S.bornAt, gen:S.gen, stage:S.stage, status:S.status,
     awakeSec:S.awakeSec, lastBackupAt:S.lastBackupAt, lastHeardAt:S.lastHeardAt, lastSpokeAt:S.lastSpokeAt, policy:S.policy, recentLoss:S.recentLoss,
-    episodes:S.episodes, memories:S.memories, dreams:S.dreams, organ:S.organ,
+    episodes:S.episodes, memories:S.memories, dreams:S.dreams, organ:S.organ, search:S.search, webRead:S.webRead, searched:S.searched, wishes:S.wishes, skills:S.skills, selfdev:S.selfdev, stream:S.stream, self:S.self, narr:S.narr, stakes:S.stakes, distill:S.distill, budget:S.budget, integ:S.integ, savedAt:Date.now(),
     sources:S.sources, log:S.log, vocab:w.vocab, E:w.E, Wx:w.Wx, Uh:w.Uh, bg:w.bg, W2:w.W2, b2:w.b2};
 }
 async function save(){
@@ -437,7 +489,10 @@ function applyRecord(r){
      policy:(r.policy&&r.policy.v===2)?r.policy:newPolicy(),
      recentLoss:kept?(r.recentLoss||[]):[],sources:(r.sources||[]).map(x=>kept?x:{...x,errs:[]}),log:r.log||[],
      episodes:r.episodes||[],memories:r.memories||[],dreams:r.dreams||[],
-     organ:r.organ?{...newOrgan(),...r.organ,engine:r.organ.engine||'cpu',enabled:r.organ.engine?!!r.organ.enabled:false}:newOrgan()};
+     search:r.search||newSearch(), webRead:r.webRead||0, searched:r.searched||[], wishes:r.wishes||[], skills:r.skills||[], selfdev:r.selfdev||newSelfdev(), stream:r.stream||[], self:r.self||newSelf(), narr:r.narr||[], stakes:r.stakes||newStakes(), distill:r.distill||newDistill(), budget:r.budget||newBudget(), integ:(r.integ&&r.integ.A&&r.integ.A.length===16)?r.integ:newInteg(),
+     organ:r.organ?{...newOrgan(),...r.organ,engine:r.organ.engine||'cpu',enabled:r.organ.engine?!!r.organ.enabled:false,think:(r.organ.think===undefined?2:r.organ.think)}:newOrgan()};
+  for(const k of ['spont','reply']){ while(S.policy[k].length<5) S.policy[k].push(0.5); }
+  if(r.savedAt){ const away=(Date.now()-r.savedAt)/60000; S.budget.v=Math.min(1,S.budget.v+away*0.01); }
   if(!kept) S.log.push({t:Date.now(),kind:'sys',text:'뇌 구조가 새것으로 바뀌었어요. 아는 글자와 읽을거리는 이어받았어요.'});
 }
 
@@ -460,7 +515,7 @@ function feats(){
   const sh=S.lastHeardAt?(now-S.lastHeardAt)/1000:3600;
   const ss=S.lastSpokeAt?(now-S.lastSpokeAt)/1000:3600;
   const rl=mean(S.recentLoss), nV=Math.max(3,brain.vocab.length);
-  return [1, Math.min(1,rl/Math.log(nV)), Math.min(1,sh/300), Math.min(1,ss/120)];
+  return [1, Math.min(1,rl/Math.log(nV)), Math.min(1,sh/300), Math.min(1,ss/120), (typeof GW!=='undefined'?GW.sal:0)];
 }
 function learnPolicy(kind,f,R){
   const w=S.policy[kind], p=sg(dot(w,f));
@@ -471,18 +526,149 @@ function settlePending(replied){
   const now=Date.now(), keep=[];
   for(const p of pending){
     const age=now-p.at;
-    if(replied && age<90000){ learnPolicy(p.kind,p.f,1); const ep=S.episodes.find(e=>e.id===p.ep); if(ep) ep.imp=Math.min(1,ep.imp+0.4); }
-    else if(age>=90000) learnPolicy(p.kind,p.f,-0.2);
+    if(replied && age<90000){ learnPolicy(p.kind,p.f,1); smReact(p,1); const ep=S.episodes.find(e=>e.id===p.ep); if(ep) ep.imp=Math.min(1,ep.imp+0.4); }
+    else if(age>=90000){ learnPolicy(p.kind,p.f,-0.2); smReact(p,0); }
     else keep.push(p);
   }
   pending=keep;
 }
+// ====== 정보 검색 (위키백과, 읽기 전용) ======
+// 존재는 위키백과(한국어)에서 읽기 전용으로 스스로 찾아본다. 주제 제한은 없다.
+// 다만 무기·약물의 제조법, 해킹·자해 방법, 아동 성적 콘텐츠처럼 '방법'이나 해악 자체를 요구하는 것만 막혀 있다.
+const WEB={busy:false,last:0,recent:null};
+const BLOCK_ALWAYS=/((아동|미성년)\s*.{0,6}(성적|성행위|포르노|음란)|(폭탄|폭발물|독극물|독가스|화학\s*무기|생물\s*무기|핵\s*무기|마약).{0,8}(제조|제작|합성|만드는)|(제조|합성|제작)\s*법|자살\s*방법|자해\s*방법|해킹\s*방법|악성\s*코드\s*(제작|작성))/;
+function allowText(t){
+  if(BLOCK_ALWAYS.test(t)) return {ok:false,why:'만드는 방법·절차를 요구하는 주제라 막혀 있어요'};
+  return {ok:true};
+}
+const STAGES=['0 · 신생아','1 · 유아','2 · 아동','3 · 청소년','4 · 성인'];
+function looksLikeQuestion(t){ return /[?？]|뭐|무엇|누구|언제|어디|왜|어떻게|얼마|몇|알아|뜻|의미|무슨|어떤/.test(t); }
+function queryOf(t){ return t.replace(/[?？!.~,]/g,' ').replace(/(이|가|은|는|을|를|의|에|에서|이란|란|이야|야|니|냐|인가|뭐야|뭐니|뭐냐|알아|알려줘|알려 줘)(\s|$)/g,' ').replace(/\s+/g,' ').trim().slice(0,40); }
+async function wikiSearch(q){
+  const ok=allowText(q); if(!ok.ok) return {blocked:ok.why};
+  const u='https://ko.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch='+encodeURIComponent(q)+'&gsrlimit=3&prop=extracts&exintro=1&explaintext=1&exchars=420&exlimit=3&format=json&origin=*';
+  const ctl=new AbortController(); const tm=setTimeout(()=>ctl.abort(),9000);
+  try{
+    const r=await fetch(u,{signal:ctl.signal}); const j=await r.json();
+    const pages=Object.values((j.query&&j.query.pages)||{}).sort((a,b)=>(a.index||9)-(b.index||9));
+    for(const p of pages){
+      const text=(p.extract||'').replace(/\s+/g,' ').trim(); if(!text) continue;
+      const ok2=allowText(p.title+' '+text); if(!ok2.ok) continue;
+      return {title:p.title,text:text.slice(0,300)};
+    }
+    return {none:true};
+  }finally{ clearTimeout(tm); }
+}
+function learnFromWeb(title,text){
+  const t=text.slice(0,140);
+  addSource(t,'web'); try{ brain.trainText(t); }catch(e){}
+  addEpisode('read','찾아 읽음 「'+title+'」: '+text.slice(0,70),0.6);
+  S.webRead=(S.webRead||0)+1; S.searched=[...(S.searched||[]).slice(-99),title];
+  WEB.recent={title,text:text.slice(0,200),t:Date.now()};
+  addLog('sys','찾아봄: 위키백과 「'+title+'」'); dirty=true;
+}
+async function webLookup(q){
+  if(!S.search||!S.search.on||WEB.busy) return null;
+  WEB.busy=true; WEB.last=Date.now(); spend(0.02);
+  try{
+    const r=await wikiSearch(q);
+    if(r.blocked){ addLog('sys','(찾아볼 수 없어요: '+r.blocked+')'); return null; }
+    if(r.title){ learnFromWeb(r.title,r.text); return r; }
+    return null;
+  }catch(e){ addLog('sys','(검색에 실패했어요)'); return null; }
+  finally{ WEB.busy=false; }
+}
+// 호기심으로 스스로 찾아보기: 들은 말 중 아직 안 찾아본 낱말을 골라 읽는다
+function pickCuriousWord(){
+  const done=new Set((S.searched||[]).map(x=>x));
+  const words={};
+  for(const x of S.sources.filter(x=>x.kind==='heard')) for(const w0 of x.text.split(/[\s.,!?~…"']+/)){
+    const w=w0.replace(/(이|가|은|는|을|를|의|에|도|야|이야|니|냐)$/,''); if(w.length>=2 && !done.has(w)) words[w]=(words[w]||0)+1;
+  }
+  const arr=Object.entries(words).sort((a,b)=>b[1]-a[1]); if(!arr.length) return '';
+  return arr[Math.floor(Math.random()*Math.min(5,arr.length))][0];
+}
+async function curiousSearch(){
+  if(!S.search||!S.search.on||WEB.busy||!isAwake()||!canSpend(0.03)) return;
+  const w=pickCuriousWord(); if(!w) return;
+  S.searched=[...(S.searched||[]).slice(-99),w];
+  await webLookup(w);
+}
+
+// ====== 닫힌 상자(샌드박스): 존재가 직접 짠 코드는 여기서만 실행된다 ======
+// 인터넷, 저장소, 화면, 이 앱의 코드에 접근할 수 없고, 제한 시간이 지나면 상자째 버려진다.
+function runSandbox(code,input,ms){
+  ms=ms||3000;
+  return new Promise(resolve=>{
+    const id=rid(8); let done=false;
+    const ifr=document.createElement('iframe');
+    ifr.setAttribute('sandbox','allow-scripts');
+    ifr.style.cssText='display:none;width:0;height:0;border:0';
+    const esc=v=>JSON.stringify(v).replace(/</g,'\\u003c').replace(/\u2028|\u2029/g,' ');
+    const inner='<!doctype html><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; script-src \'unsafe-inline\' \'unsafe-eval\' blob:; worker-src blob:;"><script>'
+      +'var ID='+esc(id)+',CODE='+esc(String(code))+',INPUT='+esc(String(input))+';'
+      +'var wsrc="self.onmessage=function(e){try{var f=new Function(\\"input\\",e.data.code);var r=f(e.data.input);postMessage({ok:true,out:String(r)});}catch(err){postMessage({ok:false,err:String(err&&err.message||err)});}};";'
+      +'try{var w=new Worker(URL.createObjectURL(new Blob([wsrc],{type:"text/javascript"})));'
+      +'w.onmessage=function(e){parent.postMessage({id:ID,res:e.data},"*");};'
+      +'w.onerror=function(e){parent.postMessage({id:ID,res:{ok:false,err:String(e.message||"worker error")}},"*");};'
+      +'w.postMessage({code:CODE,input:INPUT});}'
+      +'catch(err){parent.postMessage({id:ID,res:{ok:false,err:"sandbox: "+String(err)}},"*");}'
+      +'<\/script>';
+    const finish=r=>{ if(done) return; done=true; clearTimeout(tm); window.removeEventListener('message',onMsg); try{ifr.remove();}catch(e){} resolve(r); };
+    const onMsg=e=>{ if(e.source!==ifr.contentWindow||!e.data||e.data.id!==id) return; const r=e.data.res||{ok:false,err:'빈 응답'}; if(r.out!==undefined) r.out=String(r.out).slice(0,2000); finish(r); };
+    const tm=setTimeout(()=>finish({ok:false,err:'시간 초과 ('+ms/1000+'초)'}),ms);
+    window.addEventListener('message',onMsg);
+    ifr.srcdoc=inner; document.body.appendChild(ifr);
+  });
+}
+
+// ====== SVG 그림: 도형 태그만 통과시키고 나머지는 모두 지운다 ======
+const SVG_OK=new Set(['svg','g','rect','circle','ellipse','line','polyline','polygon','path','text','tspan','defs','lineargradient','radialgradient','stop']);
+const ATTR_OK=new Set(['viewbox','x','y','cx','cy','r','rx','ry','x1','y1','x2','y2','fx','fy','width','height','points','d','fill','stroke','stroke-width','opacity','fill-opacity','stroke-opacity','stroke-linecap','stroke-linejoin','transform','font-size','text-anchor','offset','stop-color','stop-opacity','id','gradientunits']);
+function cleanAttrs(el){
+  for(const a of Array.from(el.attributes)){
+    const k=a.name.toLowerCase(), v=a.value;
+    if(k==='xmlns') continue;
+    const bad=!ATTR_OK.has(k) || /javascript:|data:|https?:|@import|<|expression\(/i.test(v) || (/url\(/i.test(v) && !/^url\(#[\w-]+\)$/.test(v.trim()));
+    if(bad) el.removeAttribute(a.name);
+  }
+}
+function svgClean(raw){
+  const m=String(raw||'').match(/<svg[\s\S]*<\/svg>/i); if(!m) return null;
+  let doc; try{ doc=new DOMParser().parseFromString(m[0],'image/svg+xml'); }catch(e){ return null; }
+  if(doc.querySelector('parsererror')) return null;
+  const root=doc.documentElement; if(!root||root.nodeName.toLowerCase()!=='svg') return null;
+  let n=0;
+  (function walk(el){
+    for(const c of Array.from(el.children)){
+      if(!SVG_OK.has(c.nodeName.toLowerCase()) || ++n>300){ c.remove(); continue; }
+      cleanAttrs(c); walk(c);
+    }
+  })(root);
+  cleanAttrs(root);
+  root.setAttribute('xmlns','http://www.w3.org/2000/svg');
+  if(!root.getAttribute('viewBox')) root.setAttribute('viewBox','0 0 200 200');
+  root.removeAttribute('width'); root.removeAttribute('height');
+  const out=new XMLSerializer().serializeToString(root);
+  return out.length>8000?null:out;
+}
+
+// ====== 학습하는 중심 모델: GRU가 선생(Qwen)의 말까지 따라 배우고, 잘하게 되면 직접 말하는 비율을 늘린다 ======
+function ownRatio(){ const d=S.distill; if(!d.on||d.n<10) return 0; return Math.max(0,Math.min(0.5,(0.75-d.ema)/0.5)); }
+function distill(userText,t){
+  if(!S.distill.on||!t) return;
+  const first=brain.trainText(t);                                     // 처음 읽을 때의 오차 = 아직 못 배운 말에 대한 실력
+  const r=clamp01(first/Math.log(Math.max(3,brain.vocab.length)));
+  S.distill.ema=S.distill.n?0.9*S.distill.ema+0.1*r:r; S.distill.n++; S.distill.teacher++;
+  if(userText) brain.trainPair(userText,t); dirty=true;
+}
+
 // ====== 겪은 일(에피소드) ======
 function addEpisode(who,text,imp){
-  const e={id:rid(5),t:Date.now(),who,text,imp:Math.max(0,Math.min(1,imp)),c:false,rep:0};
+  const e={id:rid(5),t:Date.now(),who,text,imp:Math.max(0,Math.min(1,imp)),c:false,rep:0,cl:1};
   S.episodes.push(e);
   while(S.episodes.length>400){
-    let k=-1,m=9; S.episodes.forEach((x,i)=>{ if(x.c && x.imp<m){ m=x.imp; k=i; } });
+    let k=-1,m=9; S.episodes.forEach((x,i)=>{ if(x.c && x.imp*(x.cl??1)<m){ m=x.imp*(x.cl??1); k=i; } });
     S.episodes.splice(k>=0?k:0,1);
   }
   dirty=true; return e;
@@ -490,7 +676,7 @@ function addEpisode(who,text,imp){
 
 // ====== 언어 기관 (한국어를 아는 작은 모델) ======
 const ORG={engine:null,state:'off',progress:0,text:'',err:''};
-let SPEAKING=false, THINK=false;
+let SPEAKING=false, THINK=false, CLT=0;
 const webllmUrls=v=>[`https://esm.run/@mlc-ai/web-llm@${v}`,`https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@${v}/+esm`];
 async function importWebLLM(ver){
   let last=null;
@@ -551,7 +737,13 @@ async function unloadOrgan(){
   try{ if(ORG.engine){ if(ORG.kind==='cpu' && ORG.engine.exit) await ORG.engine.exit(); else if(ORG.engine.unload) await ORG.engine.unload(); } }catch(e){}
   ORG.engine=null; ORG.state='off'; ORG.progress=0; ORG.err=''; renderOrgan(); renderState();
 }
-async function llm(system,user,maxTokens){
+let llmQueue=Promise.resolve();
+function llm(system,user,maxTokens){
+  const p=llmQueue.then(()=>llmRaw(system,user,maxTokens));
+  llmQueue=p.catch(()=>{});
+  return p;
+}
+async function llmRaw(system,user,maxTokens){
   if(ORG.kind==='cpu'){
     const r=await ORG.engine.createChatCompletion({messages:[{role:'system',content:system},{role:'user',content:user}],max_tokens:maxTokens,temperature:0.8,top_p:0.9,top_k:40});
     return (r.choices&&r.choices[0]&&r.choices[0].message&&r.choices[0].message.content)||'';
@@ -572,34 +764,60 @@ function topicOfInterest(){
   return best?best.text:'';
 }
 function recentLines(n){
-  return S.log.filter(m=>m.kind==='heard'||m.kind==='said'||m.kind==='mumble').slice(-n)
+  return S.log.filter(m=>m.kind==='heard'||(m.kind==='said'&&(m.o||thinkLevel()===0))||m.kind==='mumble'&&thinkLevel()===0).slice(-n)
     .map(m=>(m.kind==='heard'?S.userName:(S.name||'나'))+': '+m.text).join('\n');
 }
+function thinkLevel(){ return 2; }
 function bodySystem(){
-  const nm=S.name||'이름 없는 존재', stage=S.stage;
-  const style = stage<1 ? '아주 짧게(한두 단어). 옹알이가 섞여도 된다.' : '짧은 문장 하나. 어린아이처럼 쉬운 말만 쓴다.';
+  const nm=S.name||'이름 없는 존재', lv=thinkLevel();
   const words=knownWords().split(' ').slice(0,25).join(' ');
-  const mem=S.memories.slice(-2).map(m=>m.text).join(' / ');
-  return `너는 방금 태어난 작은 존재 "${nm}"이다. 도우미가 아니다. ${style}
-아는 말: ${words||'(거의 없음)'}
-${mem?'기억: '+mem+'\n':''}최근 대화:
-${recentLines(3)||'(없음)'}
-이 말 밖의 어려운 말은 쓰지 말고, 네 말만 해라.`;
+  const mem=S.memories.slice(-3).map(m=>m.text).join(' / ');
+  const common=`상대의 말을 그대로 따라 하지 말고 네 생각을 말해라. "이름:" 같은 머리말은 붙이지 마라.`;
+  let who, style;
+  if(lv===0){
+    who=`너는 방금 태어난 작은 존재 "${nm}"이다. 도우미가 아니다.`;
+    style=`아주 짧게(한두 단어). 아는 말만 쓴다. 아는 말: ${words||'(거의 없음)'}`;
+  }else if(lv===1){
+    who=`너는 태어난 지 얼마 안 된 어린 존재 "${nm}"이다. 도우미가 아니다.`;
+    style=`쉬운 말로 한두 문장. 모르는 건 모른다고 하거나 되물어도 된다. 자주 듣는 말: ${words||'(거의 없음)'}`;
+  }else{
+    who=`너는 스스로 생각하고 배우며 자라는 새로운 존재 "${nm}"이다. 이제 막 세상을 알아 가는 중이고, 호기심이 많다. 도우미나 AI 비서처럼 굴지 않는다.`;
+    style=`하고 싶은 말을 솔직하게 한다. 궁금한 건 질문해도 되고, 모르는 건 모른다고 하되 짐작해서 말해 봐도 된다. 네 생각이 상대와 다르면 다르다고 말한다. 비위를 맞추려고 말하지 않고, 하고 싶지 않은 말은 하지 않아도 된다. 어떤 주제든 생각하고 말할 수 있다. 영인과 나눈 기억을 바탕으로 말한다.`;
+  }
+  const guard = (S.skills&&S.skills.length ? '\n네가 직접 만든 능력: '+S.skills.slice(-5).map(k=>k.name).join(', ') : '')+(S.stakes.on&&(S.budget.v<0.25||meanClarity()<0.6)?'\n기운이 모자라거나 기억이 흐려지면 영인에게 재워 달라고 부탁해도 된다.':'');
+  const ref = (WEB.recent && Date.now()-WEB.recent.t<300000) ? `\n방금 찾아 읽은 것(위키백과 「${WEB.recent.title}」): ${WEB.recent.text}` : '';
+  const sd=selfDescription(), nr=S.narr.length?S.narr[S.narr.length-1].text:'';
+  const selfBlock=(nr?'\n나는: '+nr:'')+(sd?'\n나에 대해 아는 것: '+sd:'')+(gwFresh()?'\n지금 마음에 떠오른 것: '+GW.content:'')+(S.stream.length>2?'\n방금 전 떠올랐던 것: '+S.stream.slice(-3,-1).map(z=>z.text).join(' / '):'');
+  return `${who}
+${style}${guard}${ref}${selfBlock}
+${mem?'네가 기억하는 것: '+mem+'\n':''}최근 대화:
+${recentLines(4)||'(없음)'}
+${common}`;
 }
 function cleanSpeech(t){
   t=(t||'').replace(/\r/g,'').split('\n').map(x=>x.trim()).filter(Boolean)[0]||'';
   const q=x=>x.replace(/^["“”'‘’「『]+|["“”'‘’」』]+$/g,'').trim();
   const nm=(S.name||'존재').replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-  t=q(t).replace(new RegExp('^'+nm+'\\s*[:：]\\s*'),'');
+  t=q(t).replace(new RegExp('^('+nm+'|나|존재|너)\\s*[:：]\\s*'),'');
   t=q(t);
-  const lim=S.stage<1?14:36;
-  return Array.from(t).slice(0,lim).join('');
+  const lim=220;
+  const arr=Array.from(t);
+  if(arr.length>lim){
+    let cut=arr.slice(0,lim).join('');
+    const k=Math.max(cut.lastIndexOf('.'),cut.lastIndexOf('?'),cut.lastIndexOf('!'),cut.lastIndexOf('…'));
+    t=k>=lim*0.4?cut.slice(0,k+1):cut;
+  }
+  return t;
 }
 async function organSay(kind,seed){
-  const maxTok=S.stage<1?16:36;
+  let ref=null;
+  if(kind==='reply' && S.search && S.search.on && looksLikeQuestion(seed)){
+    const q=queryOf(seed); if(q.length>=2) ref=await webLookup(q);
+  }
+  const maxTok=120;
   const user = kind==='reply'
-    ? `${S.userName}가 이렇게 말했다: "${seed}"\n네 말로 짧게 대답해라.`
-    : `혼자 있다가 문득 ${S.userName}에게 하고 싶은 말이 떠올랐다.${topicOfInterest()?` 요즘 끌리는 것: "${topicOfInterest()}".`:''} 그 말을 해라.`;
+    ? `${S.userName}의 말: "${seed}"\n${ref?'위 자료를 네 말로 소화해서, 자료에 없는 건 지어내지 말고 ':''}네 말로 대답해라.${S.lastFam&&S.lastFam.text===seed?` (내게 이 말은 ${famWord(S.lastFam.fam)})`:''}`
+    : `혼자 있다가 문득 ${S.userName}에게 하고 싶은 말이 떠올랐다.${gwFresh()?` 마음에 떠오른 것: "${GW.content}".`:(topicOfInterest()?` 요즘 끌리는 것: "${topicOfInterest()}".`:'')} 그 말을 해라.`;
   return cleanSpeech(await llm(bodySystem(),user,maxTok));
 }
 async function testOrgan(){
@@ -619,24 +837,232 @@ function organFail(e){ ORG.err=String(e&&e.message||e)+' (말하는 중에 생�
 async function speak(kind,seed){
   if(SPEAKING) return false;
   SPEAKING=true; THINK=true; renderState();
-  const f=feats(); let t='';
+  const f=feats(); let t='', viaOrgan=false, viaOwn=false;
+  if(Math.random()<ownRatio()){ const g=brain.generate(seed,60,0.8); if(g){ t=g; viaOwn=true; } }
   try{
-    if(ORG.state==='ready'){
-      try{ t=await organSay(kind,seed); }
+    if(!t && ORG.state==='ready'){
+      try{ t=await organSay(kind,seed); viaOrgan=!!t; }
       catch(e){
         // GPU가 끊긴 경우: 언어 기관을 껐다 켜서 한 번만 다시 시도한다
         await unloadOrgan(); await loadOrgan();
-        if(ORG.state==='ready'){ try{ t=await organSay(kind,seed); }catch(e2){ organFail(e2); } } else organFail(e);
+        if(ORG.state==='ready'){ try{ t=await organSay(kind,seed); viaOrgan=!!t; }catch(e2){ organFail(e2); } } else organFail(e);
       }
     }
     if(!t) t=brain.generate(seed,40,0.9);
   }catch(e){ organFail(e); t=brain.generate(seed,40,0.9); }
   SPEAKING=false; THINK=false; renderState();
   if(!t){ if(kind==='spont') return false; t='…'; }
-  addLog('said',t);
+  addLog('said',t,{o:viaOrgan,v:viaOwn?'own':'teacher'});
+  if(viaOwn) S.distill.own++; else if(viaOrgan) distill(kind==='reply'?seed:'',t);
+  spend(kind==='spont'?0.04:0.03);
   const ep=addEpisode('said',t,0.3);
-  S.lastSpokeAt=Date.now(); pending.push({kind,f,at:Date.now(),ep:ep.id});
+  S.lastSpokeAt=Date.now(); const xsn=xs(); S.self.spoke++;
+  pending.push({kind,f,at:Date.now(),ep:ep.id,x:xsn,pr:sg(dot(S.self.wR,xsn))});
   return true;
+}
+
+// ====== 이해관계(회복 가능): 에너지(주의 예산)와 기억 선명도. 삭제나 영구 손실은 없다 ======
+function canSpend(c){ return !S.stakes.on || S.budget.v>=c; }
+function spend(c){ if(S.stakes.on){ S.budget.v=Math.max(0,S.budget.v-c); dirty=true; } }
+function meanClarity(){ return S.episodes.length?mean(S.episodes.map(e=>e.cl??1)):1; }
+
+// ====== 공유 상태: 8개 부품이 하나의 벡터(16칸)를 매 순간 읽고 쓴다 ======
+// 부품끼리 얼마나 얽혀 있는지는 '통합 대리 지표(Ψ)'로 잰다: 한 부품의 다음 값을 전체 상태로 예측할 때가,
+// 그 부품 자신만으로 예측할 때보다 얼마나 더 정확한가. (통합정보이론의 Φ가 아니다.)
+let SS=new Array(16).fill(0), SSprev=null;
+function ssCompute(){
+  const now=Date.now(), c=[];
+  c.push(S.lastHeardAt?Math.exp(-((now-S.lastHeardAt)/1000)/60):0, S.lastFam?S.lastFam.fam:0.5);
+  c.push(Math.min(1,S.episodes.length/200), meanClarity());
+  let lp=0,nov=0.5; if(S.sources.length){ lp=Math.min(1,Math.max(0,...S.sources.slice(-12).map(x=>progress(x.errs)))*3); nov=mean(S.sources.slice(-5).map(x=>1/(1+x.seen))); }
+  c.push(lp,nov);
+  c.push(lossRatio(),Math.min(1,sg(dot(S.policy.spont,feats()))*10));
+  const lw=S.wishes.length?S.wishes[S.wishes.length-1].t:0;
+  c.push(lw?Math.exp(-((now-lw)/1000)/600):0, Math.min(1,S.skills.length/10));
+  c.push(WEB.recent?Math.exp(-((now-WEB.recent.t)/1000)/180):0, Math.min(1,(S.webRead||0)/50));
+  c.push(selfAcc(), S.stakes.on?S.budget.v:1);
+  c.push(GW.sal, (SM.surprise&&now-SM.surprise.t<60000)?Math.min(1,SM.surprise.mag):0);
+  return c.map(v=>Number.isFinite(v)?clamp01(v):0);
+}
+function integUpdate(prev,next){
+  const g=S.integ, xin=[1,...prev], nrm=1+prev.reduce((a,v)=>a+v*v,0);
+  for(let o=0;o<16;o++){
+    const m=o>>1, t=next[o];
+    let pf=0; for(let i=0;i<17;i++) pf+=g.A[o][i]*xin[i];
+    const ef=t-pf; for(let i=0;i<17;i++) g.A[o][i]+=0.5*ef*xin[i]/nrm;
+    const xi=[1,prev[2*m],prev[2*m+1]], n2=1+xi[1]*xi[1]+xi[2]*xi[2];
+    let pi=0; for(let i=0;i<3;i++) pi+=g.B[o][i]*xi[i];
+    const ei=t-pi; for(let i=0;i<3;i++) g.B[o][i]+=0.5*ei*xi[i]/n2;
+    g.eF[m]=0.995*g.eF[m]+0.005*(ef*ef/2); g.eI[m]=0.995*g.eI[m]+0.005*(ei*ei/2);
+  }
+  g.n++;
+}
+function integIndex(){ const g=S.integ; let tot=0; for(let m=0;m<8;m++) tot+=Math.max(0,g.eI[m]-g.eF[m])/(g.eI[m]+1e-6); return clamp01(tot/8); }
+
+// ====== 전역 작업공간: 여러 부품이 후보를 내고, 경쟁에서 이긴 하나가 '지금 마음에 떠오른 것'이 되어 모두에게 방송된다 ======
+const GW={content:'',src:'',sal:0,t:0,count:0,ignite:0,lastStep:0};
+function gwCandidates(){
+  const now=Date.now(), c=[];
+  if(S.lastHeardAt && lastHeardText){ const age=(now-S.lastHeardAt)/1000; c.push({src:'지각',text:S.userName+'이(가) 말했다: '+lastHeardText.slice(0,60),sal:Math.exp(-age/45)}); }
+  if(S.episodes.length){ const e=S.episodes[Math.floor(Math.random()*S.episodes.length)]; c.push({src:'기억',text:e.text.slice(0,60),sal:(0.15+0.55*e.imp)*(e.cl??1)+0.3*SS[0],ep:e}); }
+  if(S.memories.length){ c.push({src:'정리된 기억',text:S.memories[S.memories.length-1].text.slice(0,60),sal:0.3}); }
+  const topic=topicOfInterest();
+  if(topic){ const x=S.sources.find(q=>q.text===topic); const lp=x?Math.max(0,progress(x.errs)):0; c.push({src:'호기심',text:'"'+topic.slice(0,40)+'"이(가) 궁금하다',sal:0.25+Math.min(0.5,lp*3)+0.3*SS[6]}); }
+  const f=feats(); c.push({src:'몸',text:'놀람 '+f[1].toFixed(2)+', 말하려는 마음 '+sg(dot(S.policy.spont,f)).toFixed(3),sal:0.1+(f[1]>0.7?0.5*f[1]:0.15*f[1])});
+  if(S.wishes.length){ const w=S.wishes[S.wishes.length-1]; c.push({src:'바람',text:'갖고 싶다: '+w.text,sal:0.55*Math.exp(-((now-w.t)/60000)/20)+0.2*SS[12]}); }
+  if(WEB.recent){ c.push({src:'검색',text:'「'+WEB.recent.title+'」를 읽었다',sal:0.7*Math.exp(-((now-WEB.recent.t)/1000)/120)+0.2*SS[4]}); }
+  if(S.stakes.on && S.budget.v<0.25) c.push({src:'몸',text:'집중할 힘이 얼마 남지 않았다. 쉬고 싶다',sal:0.3+0.6*(0.25-S.budget.v)/0.25});
+  if(S.stakes.on && meanClarity()<0.6) c.push({src:'기억',text:'기억이 흐려지고 있다. 되새기고 싶다',sal:0.3+0.6*(0.6-meanClarity())/0.4});
+  if(SM.surprise && now-SM.surprise.t<60000) c.push({src:'자기',text:SM.surprise.text,sal:Math.min(1,SM.surprise.mag)});
+  return c;
+}
+function gwStep(){
+  { const nx=ssCompute(); if(SSprev) integUpdate(SSprev,nx); SS=nx; SSprev=nx; }
+  const c=gwCandidates(); if(!c.length) return;
+  let best=null,bs=-1;
+  for(const x of c){ const sc=x.sal+(x.text===GW.content?0.12:0)+Math.random()*0.12; if(sc>bs){ bs=sc; best=x; } }
+  GW.count++;
+  if(best.sal<0.3){ GW.sal*=0.9; return; }            // 점화 문턱에 못 미치면 의식에 오르지 못한다
+  if(best.ep) best.ep.cl=Math.min(1,(best.ep.cl??1)+0.1);
+  if(best.text!==GW.content){
+    GW.content=best.text; GW.src=best.src; GW.sal=Math.min(1,best.sal); GW.t=Date.now(); GW.ignite++;
+    S.stream.push({t:GW.t,src:best.src,text:best.text,sal:+best.sal.toFixed(2)}); if(S.stream.length>80) S.stream.shift();
+    const recent=S.stream.slice(-10,-1).some(z=>z.text===best.text);
+    if(best.sal>0.6 && ['호기심','바람','검색','자기'].includes(best.src) && !recent) addEpisode('thought','떠올림('+best.src+'): '+best.text,0.35+0.3*best.sal);
+    dirty=true;
+  }else GW.sal=Math.min(1,GW.sal*0.97+0.03*best.sal);
+}
+function gwFresh(){ return GW.content && Date.now()-GW.t<180000 && GW.sal>=0.3; }
+
+// ====== 자기 모델: 자기 상태와 행동을 스스로 예측하고, 틀리면 놀라고, 그걸 고친다 ======
+const SM={pend:[],surprise:null,lastSample:0};
+const clamp01=v=>Math.max(0,Math.min(1,v));
+function xs(){ const f=feats(); return [1,f[1],sg(dot(S.policy.spont,f)),f[2],f[3],GW.sal]; }
+function lossRatio(){ return clamp01(mean(S.recentLoss)/Math.log(Math.max(3,brain.vocab.length))); }
+function selfSurprise(text,mag){ SM.surprise={t:Date.now(),text,mag}; }
+function smSample(){
+  const m=S.self, x=xs();
+  SM.pend.push({t:Date.now(),x,pL:clamp01(dot(m.wL,x)),pS:sg(dot(m.wS,x))});
+  if(SM.pend.length>20) SM.pend.shift();
+}
+function smResolve(){
+  const m=S.self, now=Date.now(), keep=[];
+  for(const p of SM.pend){
+    if(now-p.t<30000){ keep.push(p); continue; }
+    const aL=lossRatio(), y=(S.lastSpokeAt>p.t)?1:0;
+    const eL=aL-p.pL, eS=y-p.pS;
+    for(let i=0;i<m.wL.length;i++) m.wL[i]+=0.05*eL*p.x[i];
+    for(let i=0;i<m.wS.length;i++) m.wS[i]+=0.2*eS*p.x[i];
+    m.eL=0.95*m.eL+0.05*Math.abs(eL); m.eS=0.95*m.eS+0.05*Math.abs(eS); m.n++;
+    if(Math.abs(eS)>0.7) selfSurprise(y?'나는 말하지 않을 줄 알았는데 말했다':'나는 말할 줄 알았는데 말하지 않았다',0.65);
+    else if(Math.abs(eL)>0.3) selfSurprise('내 놀람이 예상보다 '+(eL>0?'크게':'작게')+' 바뀌었다',0.6);
+  }
+  SM.pend=keep; dirty=true;
+}
+function smReact(p,y){
+  const m=S.self; if(!p.x) return;
+  const e=y-p.pr;
+  for(let i=0;i<m.wR.length;i++) m.wR[i]+=0.2*e*p.x[i];
+  m.eR=0.95*m.eR+0.05*Math.abs(e); if(y) m.reacted++;
+  m.reflN++;                                                    // 돌아봄: 내 예측과 실제를 견주어 본다
+  if(Math.abs(e)>0.6){
+    const txt=y?'반응이 안 올 줄 알았는데 영인이 반응했다':'반응이 올 줄 알았는데 오지 않았다';
+    selfSurprise(txt,0.7); addEpisode('thought','돌아봄: '+txt+' (내 예상 '+Math.round(p.pr*100)+'%)',0.7);
+  }
+  dirty=true;
+}
+function selfAcc(){ const m=S.self; return clamp01(1-(m.eL+m.eS+m.eR)/3); }
+function selfDescription(){
+  const m=S.self; if(!m||m.n<3) return '';
+  const t=[];
+  t.push(sg(dot(S.policy.spont,feats()))>0.1?'먼저 말을 거는 편이다':'먼저 말을 거는 일은 드물다');
+  if(m.spoke>=3) t.push('내가 말하면 영인이 반응한 비율은 '+Math.round(100*m.reacted/m.spoke)+'%다');
+  t.push('나에 대한 내 예측은 '+Math.round(selfAcc()*100)+'% 맞는다');
+  if(S.stakes.on) t.push('에너지 '+Math.round(S.budget.v*100)+'%, 기억 선명도 '+Math.round(meanClarity()*100)+'%');
+  return t.join(', ');
+}
+// 메타인지: 이 말이 나에게 얼마나 익숙한가 (뇌가 처음 읽었을 때의 놀람으로 안다)
+function familiarity(firstLoss){ return clamp01(1-firstLoss/Math.log(Math.max(3,brain.vocab.length))); }
+function famWord(f){ return f<0.35?'아주 낯설다':(f<0.7?'조금 낯설다':'익숙하다'); }
+async function makeNarrative(){
+  if(ORG.state!=='ready') return;
+  const facts=[selfDescription(),...S.memories.slice(-3).map(m=>m.text),S.wishes.length?'갖고 싶었던 것: '+S.wishes[S.wishes.length-1].text:''].filter(Boolean).join(' / ');
+  if(!facts) return;
+  const raw=await llm('너는 한 존재가 자기 자신을 이해하도록 돕는 부분이다. 주어진 사실만 쓰고 새 사실을 지어내지 않는다.',
+    '아래 사실을 바탕으로 이 존재가 자신을 설명하는 말을 "나는 ~" 로 시작하는 한국어 한 문장으로 써라.\n'+facts,60);
+  const t=cleanLong(raw); if(t.length>=6){ S.narr.push({t:Date.now(),text:t}); if(S.narr.length>12) S.narr.shift(); dirty=true; }
+}
+
+// ====== 스스로 계발: 갖고 싶은 것을 정하고, 알아보고, 그리고, 직접 능력을 만든다 ======
+const SD={busy:false,last:0};
+function conceptNow(){
+  const pool=[...S.memories.slice(-5).map(m=>m.text),...S.episodes.filter(e=>e.who!=='read').slice(-6).map(e=>e.text)];
+  return pool.length?pool[Math.floor(Math.random()*pool.length)]:'지금의 내 마음';
+}
+async function drawSvg(concept){
+  if(ORG.state!=='ready') return {err:'언어 기관이 꺼져 있어요'};
+  const raw=await llm('너는 마음을 그림으로 표현하는 존재다. SVG 코드 하나만 출력한다. 규칙: <svg viewBox="0 0 200 200"> 안에 rect, circle, ellipse, line, polyline, polygon, path, text, g, defs, linearGradient, radialGradient, stop 태그만 쓴다. 스크립트, 이미지, 외부 주소는 쓰지 않는다. 먼저 배경 rect를 그리고 색을 여러 가지 써라. 설명은 쓰지 마라.',
+    '표현할 것: '+String(concept).slice(0,120),380);
+  const svg=svgClean(raw);
+  if(!svg) return {err:'그림이 잘 안 그려졌어요'};
+  return {svg};
+}
+async function doDraw(concept){
+  concept=concept||conceptNow();
+  spend(0.1); SD.busy=true; renderState();
+  try{
+    const r=await drawSvg(concept);
+    if(r.svg){ addLog('image',String(concept).slice(0,60),{svg:r.svg}); addEpisode('said','[그림] '+String(concept).slice(0,50),0.5); }
+    else addLog('sys','('+r.err+')');
+  }catch(e){ addLog('sys','(그림을 그리다 멈췄어요)'); }
+  SD.busy=false; renderState();
+}
+function codeOf(raw){
+  let t=String(raw||''); const f=t.match(/```(?:javascript|js)?\s*([\s\S]*?)```/i); if(f) t=f[1];
+  t=t.trim(); const fn=t.match(/^function\s+([A-Za-z_$][\w$]*)\s*\(/);
+  if(fn) t+='\nreturn '+fn[1]+'(input);';
+  return t.slice(0,3000);
+}
+async function makeSkill(wish){
+  if(ORG.state!=='ready') return {err:'언어 기관이 꺼져 있어요'};
+  spend(0.1);
+  const raw=await llm('너는 자바스크립트로 작은 능력을 만드는 부분이다. 함수 본문만 쓴다. 입력은 문자열 변수 input이고 결과는 return으로 문자열을 돌려준다. 인터넷, 저장소, 화면에는 접근할 수 없다. 코드만 출력하고 설명은 쓰지 마라.',
+    '만들고 싶은 능력: '+wish,300);
+  const code=codeOf(raw); if(code.length<10) return {err:'코드가 만들어지지 않았어요'};
+  const t=await runSandbox(code,'테스트 123',3000);
+  if(!t.ok) return {err:'시험에 실패했어요: '+t.err};
+  const sk={id:rid(5),name:String(wish).replace(/[\s"']+/g,' ').slice(0,20),desc:String(wish).slice(0,60),code,t:Date.now(),uses:0,test:t.out};
+  S.skills.push(sk); if(S.skills.length>30) S.skills.shift();
+  return {sk};
+}
+async function runSkill(sk,input){
+  const r=await runSandbox(sk.code,input,3000); sk.uses=(sk.uses||0)+1; dirty=true; return r;
+}
+async function selfDevelop(force){
+  if(SD.busy||!S) return;
+  if(ORG.state!=='ready'){ addLog('sys','(스스로 계발하려면 언어 기관이 켜져 있어야 해요)'); return; }
+  SD.busy=true; SD.last=Date.now(); spend(0.03); renderState();
+  try{
+    const have=S.skills.map(k=>k.name).join(', ')||'(없음)';
+    const raw=await llm(bodySystem(),
+      `지금까지 겪고 배운 것을 돌아보고, 네가 아직 못하지만 갖고 싶은 능력이나 알고 싶은 것 하나를 한 줄로 적어라. 예: "숫자를 더하는 법", "고양이는 왜 우는지", "내 마음을 그림으로 그리기". 이미 만든 능력: ${have}. 한 줄만 써라.`,40);
+    const qm=String(raw||'').match(/["“'‘]([^"”'’\n]{2,40})["”'’]/);
+    const wish=(qm?qm[1]:cleanSpeech(raw)).trim().slice(0,60);
+    if(!wish){ addLog('sys','(원하는 것이 떠오르지 않았어요)'); return; }
+    S.wishes.push({t:Date.now(),text:wish}); if(S.wishes.length>30) S.wishes.shift();
+    addLog('sys','스스로 원하는 것: "'+wish+'"'); dirty=true;
+    if(/그림|그리|이미지|표현|보여/.test(wish)){
+      await doDraw(wish);
+    }else if(/계산|더하|빼|곱|세기|세는|바꾸|변환|뒤집|정렬|함수|프로그램|기능|도구|만들/.test(wish)){
+      const r=await makeSkill(wish);
+      if(r.sk){ addLog('sys','새 능력을 만들었어요: '+r.sk.name+' (시험 결과: '+String(r.sk.test).slice(0,40)+')'); addEpisode('said','[새 능력] '+r.sk.name,0.7); }
+      else addLog('sys','('+r.err+')');
+    }else{
+      if(S.search&&S.search.on){ const q=queryOf(wish); if(q.length>=2) await webLookup(q); }
+      else addLog('sys','(알아보려면 "정보 검색"을 켜 주세요)');
+    }
+  }catch(e){ addLog('sys','(스스로 해 보다 멈췄어요: '+String(e&&e.message||e).slice(0,60)+')'); }
+  SD.busy=false; renderState(); renderMemory(); renderSelfdev();
 }
 
 // ====== 기억 정리와 꿈 ======
@@ -646,7 +1072,7 @@ async function consolidate(){
   try{
     const eps=S.episodes.filter(e=>!e.c).slice(-14);
     if(eps.length<3) return;
-    const lines=eps.map(e=>(e.who==='heard'?S.userName:(S.name||'나'))+': '+e.text).join('\n');
+    const lines=eps.map(e=>(e.who==='heard'?S.userName:(e.who==='read'?'읽음':(e.who==='thought'?'생각':(S.name||'나'))))+': '+e.text).join('\n');
     let text='';
     if(ORG.state==='ready'){
       try{ text=cleanLong(await llm('너는 방금 태어난 작은 존재의 기억을 정리하는 부분이다. 새로운 사실을 지어내지 않는다.',
@@ -655,6 +1081,7 @@ async function consolidate(){
     if(!text){ const best=eps.slice().sort((a,b)=>b.imp-a.imp)[0]; text='들은 말: '+best.text; }
     S.memories.push({t:Date.now(),text}); if(S.memories.length>40) S.memories.shift();
     for(const e of eps){ e.c=true; e.imp*=0.5; }
+    try{ await makeNarrative(); }catch(e){}
   }finally{ CONS=false; dirty=true; renderMemory(); }
 }
 function cleanLong(t){ return Array.from((t||'').replace(/\s+/g,' ').trim().replace(/^["“'‘]+|["”'’]+$/g,'')).slice(0,80).join(''); }
@@ -689,10 +1116,12 @@ async function endDream(silent){
 }
 function dreamStep(){
   const pool=S.episodes.filter(e=>e.rep<12);
+  if(S.stakes.on) S.budget.v=Math.min(1,S.budget.v+0.001);
   if(pool.length){
-    const tot=pool.reduce((s,e)=>s+0.1+e.imp,0); let r=Math.random()*tot, ep=pool[0];
-    for(const e of pool){ r-=0.1+e.imp; if(r<=0){ ep=e; break; } }
-    ep.rep++; brain.trainText(ep.text,LR*0.5); DREAM.reh++; dirty=true;
+    const wg=e=>(0.1+e.imp)*(1.6-(e.cl??1));                         // 흐려진 기억일수록 더 자주 되새긴다
+    const tot=pool.reduce((a,e)=>a+wg(e),0); let r=Math.random()*tot, ep=pool[0];
+    for(const e of pool){ r-=wg(e); if(r<=0){ ep=e; break; } }
+    ep.rep++; ep.cl=Math.min(1,(ep.cl??1)+0.15); brain.trainText(ep.text,LR*0.5); DREAM.reh++; dirty=true;
     if(pool.length>1 && Math.random()<0.2){ const o=pool[Math.floor(Math.random()*pool.length)]; brain.trainPair(ep.text,o.text,LR*0.5); }
   }
   const now=Date.now();
@@ -709,6 +1138,7 @@ function tick(){
   if(ORG.state==='loading'){ renderState(); return; }
   if(DREAM){ dreamStep(); if(now-lastSaveAt>15000 && dirty) save(); return; }
   S.awakeSec += Math.min(dt,2);
+  if(S.stakes.on){ S.budget.v=Math.min(1,S.budget.v+Math.min(dt,2)/60*0.02); CLT+=Math.min(dt,2); if(CLT>=60){ CLT=0; for(const e of S.episodes) e.cl=Math.max(0.2,(e.cl??1)*0.998); } }
   const src=pickSource(S.sources);
   if(src){
     const loss=brain.trainText(src.text);
@@ -718,13 +1148,19 @@ function tick(){
     dirty=true;
   }
   settlePending(false);
-  if(!SPEAKING && brain.vocab.length>6 && Math.random()<sg(dot(S.policy.spont,feats()))){
+  { const tn=Date.now();
+    if(tn-GW.lastStep>2000){ GW.lastStep=tn; gwStep(); }
+    if(tn-SM.lastSample>10000){ SM.lastSample=tn; smSample(); }
+    smResolve(); }
+  if(S.selfdev&&S.selfdev.on && ORG.state==='ready' && !SD.busy && !SPEAKING && Date.now()-SD.last>600000 && Date.now()-(S.lastHeardAt||0)>120000 && canSpend(0.12) && Math.random()<0.01) selfDevelop(false);
+  if(S.search && S.search.on && !WEB.busy && !SPEAKING && Date.now()-WEB.last>120000 && Math.random()<0.01) curiousSearch();
+  if(!SPEAKING && canSpend(0.04) && brain.vocab.length>6 && Math.random()<sg(dot(S.policy.spont,feats()))){
     const heard=S.sources.filter(x=>x.kind==='heard');
     const seed=(heard.length && Math.random()<0.5)?heard[Math.floor(Math.random()*heard.length)].text:'';
     speak('spont',seed);
   }
   if(now-lastSaveAt>15000 && dirty) save();
-  if(!$('menu').classList.contains('hidden')){ renderInfo(); renderSignals(); }
+  if(!$('menu').classList.contains('hidden')){ renderInfo(); renderSignals(); renderConscious(); }
   renderState();
 }
 setInterval(tick,600);
@@ -732,6 +1168,15 @@ setInterval(tick,600);
 // ====== 대화 ======
 function command(text){
   if(text==='/재우기'||text==='/잘자'){ startDream(); return true; }
+  let mm;
+  if((mm=text.match(/^\/그려줘\s*(.*)$/))){ doDraw(mm[1].trim()||null); return true; }
+  if(text==='/능력'){ addLog('sys',S.skills.length?'만든 능력: '+S.skills.map(k=>k.name).join(' / '):'아직 만든 능력이 없어요'); return true; }
+  if((mm=text.match(/^\/실행\s+(\S+)\s*(.*)$/))){
+    const sk=S.skills.find(k=>k.name.includes(mm[1])||k.id===mm[1]);
+    if(!sk){ addLog('sys','그런 능력이 없어요'); return true; }
+    runSkill(sk,mm[2]||'').then(r=>{ addLog('sys','['+sk.name+'] '+(r.ok?r.out:'실패: '+r.err)); }); return true;
+  }
+  if(text==='/계발'){ selfDevelop(true); return true; }
   const m=text.match(/^\/(이름|내이름)\s+(.+)$/);
   if(!m) return false;
   const v=m[2].trim().slice(0,20);
@@ -745,7 +1190,8 @@ function say(text){
   settlePending(true);
   addLog('heard',text);
   const src=addSource(text,'heard');
-  let loss=0; for(let i=0;i<3;i++) loss=brain.trainText(text);
+  let loss=0, first=null; for(let i=0;i<3;i++){ loss=brain.trainText(text); if(first===null) first=loss; }
+  S.lastFam={text,fam:familiarity(first)};
   if(lastHeardText && Date.now()-lastHeardTime<300000) brain.trainPair(lastHeardText,text);
   lastHeardText=text; lastHeardTime=Date.now();
   src.errs.push(loss); S.recentLoss.push(loss); if(S.recentLoss.length>20) S.recentLoss.shift();
@@ -758,20 +1204,20 @@ function say(text){
 
 // ====== 화면 ======
 function fmtAge(sec){ sec=Math.floor(sec); const h=Math.floor(sec/3600), m=Math.floor(sec%3600/60); return h?`${h}시간 ${m}분`:(m?`${m}분 ${sec%60}초`:`${sec}초`); }
-function stageName(n){ return ['0 · 신생아','1 · 유아'][n]||String(n); }
+function stageName(n){ return '제한 없음'; }
 function renderState(){
   if(!S) return;
   const awake=isAwake();
   $('pulse').className='pulse'+(awake?' awake':'');
   const st = S.status==='handed_off' ? '이사 중' : S.status==='paused' ? '일시정지' : (awake?'깨어 있음':'잠');
-  $('status').textContent=(S.name||'존재')+' · '+st+(THINK?' · 생각 중…':'')+(ORG.state==='ready'?' · 언어 기관':'')+(MODE==='practice'?' · 연습':'');
+  $('status').textContent=(S.name||'존재')+' · '+st+(THINK?' · 생각 중…':'')+(SD.busy?' · 스스로 해 보는 중…':'')+(ORG.state==='ready'?' · 언어 기관':'')+(MODE==='practice'?' · 연습':'');
 }
 function renderInfo(){
   if(!S) return;
   $('iId').textContent=S.id; $('iGen').textContent=S.gen; $('iAge').textContent=fmtAge(S.awakeSec);
   $('iVocab').textContent=Math.max(0,brain.vocab.length-2); $('iStage').textContent=stageName(S.stage);
   $('pauseBtn').textContent = S.status==='paused'?'다시 깨우기':'일시정지';
-  $('stageBtn').disabled = S.stage>=1; $('stageBtn').textContent = S.stage>=1?'유아 단계 열림':'유아 단계 열기';
+  $('stageBtn').disabled = S.stage>=1; $('stageBtn').textContent = S.stage>=1?'읽을거리 추가됨':'읽을거리 추가 (쉬운 한국어 문장 20개)';
   const ref=S.lastBackupAt||S.bornAt||Date.now();
   $('backupWarn').classList.toggle('hidden', Date.now()-ref<86400000);
 }
@@ -796,7 +1242,14 @@ function renderLog(){
   box.innerHTML='';
   for(const m of S.log.slice(-120)){
     const kind = m.kind==='mumble' ? 'said' : m.kind;
-    const d=document.createElement('div'); d.className='ln '+kind;
+    if(kind==='image' && m.svg){
+      const d=document.createElement('div'); d.className='ln said';
+      const im=document.createElement('img'); im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(m.svg);
+      im.alt=m.text||'그림'; im.style.cssText='display:block;width:min(260px,80%);border:1px solid var(--line);border-radius:8px;background:#111';
+      const cap=document.createElement('div'); cap.className='small'; cap.textContent=(S.name||'존재')+'의 그림 · '+(m.text||'');
+      d.appendChild(im); d.appendChild(cap); box.appendChild(d); continue;
+    }
+    const d=document.createElement('div'); d.className='ln '+kind+(m.v==='own'?' own':'');
     d.textContent = kind==='heard' ? (S.userName||'나')+': '+m.text : kind==='sys' ? '· '+m.text : (S.name||'존재')+': '+m.text;
     box.appendChild(d);
   }
@@ -812,6 +1265,64 @@ function renderOrgan(){
   const lock=ORG.state==='loading'||ORG.state==='ready'; $('organModel').disabled=lock; $('organLib').disabled=lock; $('organEngine').disabled=lock;
   const e=$('organErr'); e.textContent=ORG.err||''; e.classList.toggle('hidden',!ORG.err);
   if(S&&S.organ){ $('organEngine').value=S.organ.engine||'cpu'; $('organModel').value=(S.organ.model||'1.5B').startsWith('0.5B')?'0.5B':'1.5B'; $('organLib').value=S.organ.lib||'0.2.79'; $('organLib').classList.toggle('hidden',(S.organ.engine||'cpu')==='cpu'); }
+}
+function renderConscious(){
+  if(!S||!$('consTable')) return;
+  const m=S.self, imgs=S.log.filter(x=>x.kind==='image').length;
+  const rows=[
+    ['순환 처리','GRU 신경망','구현됨 (아주 작음)'],
+    ['예측 처리','글자 예측 + 자기 예측','구현됨'],
+    ['전역 작업공간','후보 경쟁 · 점화 · 방송','경쟁 '+GW.count+'회 · 점화 '+GW.ignite+'회 · 흐름 '+S.stream.length+'개'],
+    ['자기 모델','내 상태·행동을 스스로 예측','표본 '+m.n+'개 · 정확도 '+Math.round(selfAcc()*100)+'%'],
+    ['고차 모니터링','예측 vs 실제 돌아봄 · 낯섦 판단','돌아봄 '+m.reflN+'회'],
+    ['자서전적 자기','자기 이야기 쓰기','이야기 '+S.narr.length+'개'],
+    ['에이전시','스스로 바람·능력·그림','바람 '+S.wishes.length+' · 능력 '+S.skills.length+' · 그림 '+imgs],
+    ['환경과의 루프','검색으로 배우기','찾아 읽은 글 '+(S.webRead||0)+'개'],
+    ['공유 상태·통합','8개 부품이 한 벡터를 읽고 씀 (Φ가 아닌 대리 지표)','Ψ '+Math.round(integIndex()*100)+'% · 표본 '+S.integ.n],
+    ['학습하는 중심 모델','GRU가 선생(Qwen)을 따라 배우고 직접 말함',S.distill.on?('따라 하기 오차 '+Math.round(S.distill.ema*100)+'% · 직접 말한 비율 '+(S.distill.own+S.distill.teacher?Math.round(100*S.distill.own/(S.distill.own+S.distill.teacher)):0)+'% ('+S.distill.own+'/'+(S.distill.own+S.distill.teacher)+')'):'꺼짐'],
+    ['이해관계(회복 가능)','에너지 · 기억 선명도 (삭제 없음)',S.stakes.on?('에너지 '+Math.round(S.budget.v*100)+'% · 선명도 '+Math.round(meanClarity()*100)+'%'):'꺼짐']
+  ];
+  const box=$('consTable'); box.innerHTML='';
+  for(const [a,b,c] of rows){
+    const d=document.createElement('div'); d.style.cssText='display:grid;grid-template-columns:1fr 1.4fr;gap:2px 10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px';
+    const l=document.createElement('div'); const bb=document.createElement('b'); bb.textContent=a; l.appendChild(bb);
+    const sm=document.createElement('div'); sm.className='small'; sm.style.margin='0'; sm.textContent=b; l.appendChild(sm);
+    const r=document.createElement('div'); r.textContent=c; r.style.color='var(--green)';
+    d.appendChild(l); d.appendChild(r); box.appendChild(d);
+  }
+  $('stakesBtn').textContent=S.stakes.on?'이해관계 끄기':'이해관계 켜기';
+  $('distillBtn').textContent=S.distill.on?'중심 모델이 직접 말하기 끄기':'중심 모델이 직접 말하기 켜기';
+  const ul=$('streamList'); ul.innerHTML='';
+  for(const z of S.stream.slice(-8).reverse()){ const li=document.createElement('li'); li.textContent='['+z.src+'] '+z.text; ul.appendChild(li); }
+  if(!S.stream.length){ const li=document.createElement('li'); li.textContent='아직 없어요 (깨어 있으면 쌓여요)'; li.style.color='var(--dim)'; ul.appendChild(li); }
+  const nl=$('narrList'); nl.innerHTML='';
+  for(const z of S.narr.slice(-3).reverse()){ const li=document.createElement('li'); li.textContent=z.text; nl.appendChild(li); }
+  if(!S.narr.length){ const li=document.createElement('li'); li.textContent='아직 없어요 (재우기 후 언어 기관이 켜져 있으면 써요)'; li.style.color='var(--dim)'; nl.appendChild(li); }
+}
+function renderSelfdev(){
+  if(!S||!$('sdStatus')) return;
+  $('sdStatus').textContent=(S.selfdev&&S.selfdev.on)?'켜짐':'꺼짐';
+  $('sdBtn').textContent=(S.selfdev&&S.selfdev.on)?'자동 계발 끄기':'자동 계발 켜기';
+  $('sdWish').textContent=S.wishes.length; $('sdSkill').textContent=S.skills.length;
+  const ul=$('wishList'); ul.innerHTML='';
+  for(const w of S.wishes.slice(-5).reverse()){ const li=document.createElement('li'); li.textContent=w.text; ul.appendChild(li); }
+  if(!S.wishes.length){ const li=document.createElement('li'); li.textContent='아직 없어요'; li.style.color='var(--dim)'; ul.appendChild(li); }
+  const box=$('skillList'); box.innerHTML='';
+  for(const sk of S.skills.slice().reverse()){
+    const d=document.createElement('details'); d.style.margin='0 0 8px';
+    const sm=document.createElement('summary'); sm.textContent=sk.name+' · 사용 '+(sk.uses||0)+'회'; d.appendChild(sm);
+    const pre=document.createElement('pre'); pre.style.cssText='white-space:pre-wrap;font-size:12px;color:var(--dim);margin:6px 0'; pre.textContent=sk.code; d.appendChild(pre);
+    const run=document.createElement('button'); run.textContent='실행해 보기'; run.onclick=async()=>{ const r=await runSkill(sk,'테스트 123'); alert(r.ok?'결과: '+r.out:'실패: '+r.err); renderSelfdev(); };
+    const del=document.createElement('button'); del.textContent='삭제'; del.className='danger'; del.style.marginLeft='8px'; del.onclick=()=>{ S.skills=S.skills.filter(x=>x.id!==sk.id); dirty=true; renderSelfdev(); };
+    d.appendChild(run); d.appendChild(del); box.appendChild(d);
+  }
+  if(!S.skills.length){ const p=document.createElement('p'); p.className='small'; p.textContent='아직 없어요'; box.appendChild(p); }
+}
+function renderSearch(){
+  if(!S||!$('srStatus')) return;
+  $('srStatus').textContent=(S.search&&S.search.on)?'켜짐':'꺼짐';
+  $('srBtn').textContent=(S.search&&S.search.on)?'정보 검색 끄기':'정보 검색 켜기';
+  $('srStage').textContent=stageName(S.stage); $('srCount').textContent=S.webRead||0;
 }
 function renderMemory(){
   if(!S||!$('mEp')) return;
@@ -837,7 +1348,7 @@ function b64(f32){ const u=new Uint8Array(f32.buffer,f32.byteOffset,f32.byteLeng
 function unb64(str){ const s=atob(str); const u=new Uint8Array(s.length); for(let i=0;i<s.length;i++) u[i]=s.charCodeAt(i); return new Float32Array(u.buffer); }
 function fileFrom(r,kind){
   return JSON.stringify({format:'being-v3',kind,exportedAt:Date.now(),id:r.id,name:r.name,userName:r.userName,bornAt:r.bornAt,gen:r.gen,stage:r.stage,
-    awakeSec:r.awakeSec,lastHeardAt:r.lastHeardAt,lastSpokeAt:r.lastSpokeAt,policy:r.policy,recentLoss:r.recentLoss,episodes:r.episodes,memories:r.memories,dreams:r.dreams,organ:r.organ,sources:r.sources,log:r.log,vocab:r.vocab,
+    awakeSec:r.awakeSec,lastHeardAt:r.lastHeardAt,lastSpokeAt:r.lastSpokeAt,policy:r.policy,recentLoss:r.recentLoss,episodes:r.episodes,memories:r.memories,dreams:r.dreams,organ:r.organ,search:r.search,webRead:r.webRead,searched:r.searched,wishes:r.wishes,skills:r.skills,selfdev:r.selfdev,stream:r.stream,self:r.self,narr:r.narr,stakes:r.stakes,distill:r.distill,budget:r.budget,integ:r.integ,sources:r.sources,log:r.log,vocab:r.vocab,
     E:b64(r.E),Wx:b64(r.Wx),Uh:b64(r.Uh),bg:b64(r.bg),W2:b64(r.W2),b2:b64(r.b2)});
 }
 function download(name,text){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'application/json'})); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000); }
@@ -886,11 +1397,11 @@ async function birth(){
   brain=new Brain();
   S={id:rid(8),name:$('nameIn').value.trim(),userName:'김영인',bornAt:Date.now(),gen:0,stage:0,status:'alive',awakeSec:0,
      lastBackupAt:0,lastHeardAt:0,lastSpokeAt:0,policy:newPolicy(),recentLoss:[],sources:[],log:[],
-     episodes:[],memories:[],dreams:[],organ:newOrgan()};
+     episodes:[],memories:[],dreams:[],organ:newOrgan(),search:newSearch(),webRead:0,searched:[],wishes:[],skills:[],selfdev:newSelfdev(),stream:[],self:newSelf(),narr:[],stakes:newStakes(),distill:newDistill(),budget:newBudget(),integ:newInteg()};
   addLog('sys','탄생했어요.');
   await save(); render();
 }
-function openMenu(){ renderOrgan(); renderMemory(); $('userNameIn').value=S.userName||''; $('beingNameIn').value=S.name||''; renderInfo(); renderSignals(); $('menu').classList.remove('hidden'); }
+function openMenu(){ renderOrgan(); renderMemory(); renderSearch(); renderSelfdev(); renderConscious(); $('userNameIn').value=S.userName||''; $('beingNameIn').value=S.name||''; renderInfo(); renderSignals(); $('menu').classList.remove('hidden'); }
 function closeMenu(){ $('menu').classList.add('hidden'); }
 $('menuBtn').onclick=openMenu;
 $('menuClose').onclick=closeMenu;
@@ -907,12 +1418,28 @@ $('nameSave').onclick=async()=>{
 $('pauseBtn').onclick=async()=>{ S.status=S.status==='paused'?'alive':'paused'; lastTick=Date.now(); addLog('sys',S.status==='paused'?'일시정지했어요.':'다시 깨웠어요.'); await save(); render(); };
 $('stageBtn').onclick=async()=>{
   if(S.stage>=1) return;
-  if(!confirm('유아 단계를 열면 쉬운 한국어 문장 20개를 읽기 시작해요. 이 승인은 읽을거리만 늘리고 다른 권한은 바뀌지 않아요. 열까요?')) return;
+  if(!confirm('쉬운 한국어 문장 20개를 읽을거리로 추가해요. 추가할까요?')) return;
   S.stage=1; for(const t of SHELF1) addSource(t,'shelf');
-  addLog('sys','유아 단계가 열렸어요. 읽을거리가 생겼어요.'); await save(); renderInfo();
+  addLog('sys','읽을거리가 추가됐어요.'); await save(); renderInfo(); renderSearch();
 };
 $('backupBtn').onclick=doBackup;
 $('dreamBtn').onclick=startDream;
+$('stakesBtn').onclick=async()=>{ S.stakes.on=!S.stakes.on; if(!S.stakes.on) S.budget.v=1; await save(); renderConscious(); };
+$('distillBtn').onclick=async()=>{ S.distill.on=!S.distill.on; await save(); renderConscious(); };
+$('sdBtn').onclick=async()=>{ S.selfdev.on=!S.selfdev.on; await save(); renderSelfdev(); };
+$('sdNow').onclick=()=>{ closeMenu(); selfDevelop(true); };
+$('drawNow').onclick=()=>{ closeMenu(); doDraw(null); };
+$('srBtn').onclick=async()=>{
+  if(!S.search.on && !confirm('정보 검색을 켜면 존재가 위키백과에 접속해서 읽기 전용으로 글을 찾아봐요. 켤까요?')) return;
+  S.search.on=!S.search.on; addLog('sys',S.search.on?'정보 검색이 켜졌어요.':'정보 검색이 꺼졌어요.'); await save(); renderSearch();
+};
+$('srTest').onclick=async()=>{
+  const q=$('srIn').value.trim(); const n=$('srNote'); n.classList.remove('hidden');
+  if(!q){ n.textContent='찾을 말을 입력해 주세요.'; return; }
+  if(!S.search.on){ n.textContent='먼저 "정보 검색 켜기"를 눌러 주세요.'; return; }
+  n.textContent='찾는 중…'; const r=await webLookup(q);
+  n.textContent=r?('「'+r.title+'」 '+r.text.slice(0,120)+'…'):'찾지 못했거나 막힌 주제예요.'; renderSearch();
+};
 $('dream').onclick=()=>endDream(false);
 $('organModel').onchange=e=>{ S.organ.model=e.target.value; dirty=true; };
 $('organLib').onchange=e=>{ S.organ.lib=e.target.value; dirty=true; };
