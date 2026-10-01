@@ -147,7 +147,7 @@ select{font:inherit;font-size:13px;background:transparent;color:var(--ink);borde
       <div class="sig" style="grid-template-columns:auto 1fr"><span>상태</span><b id="organStatus">꺼짐</b></div>
       <div class="bar" style="margin:6px 0 8px"><i id="organBar"></i></div>
       <div class="btns">
-        <select id="organModel"><option value="1.5B">Qwen2.5 1.5B (권장, 약 1GB)</option><option value="0.5B">Qwen2.5 0.5B (가벼움, 약 0.3GB)</option></select>
+        <select id="organModel"><option value="1.5B">Qwen2.5 1.5B (권장, 약 1GB)</option><option value="0.5B">Qwen2.5 0.5B (가벼움, 약 0.3GB)</option><option value="0.5B-f32">0.5B 호환 모드 (가장 안정적)</option><option value="1.5B-f32">1.5B 호환 모드</option></select>
         <button id="organBtn" class="go">언어 기관 켜기</button>
       </div>
       <p id="organErr" class="small hidden" style="color:var(--warn);margin-top:8px"></p>
@@ -500,12 +500,15 @@ async function organSupport(){
 async function loadOrgan(){
   if(ORG.state==='loading'||ORG.state==='ready') return;
   ORG.state='loading'; ORG.progress=0; ORG.err=''; renderOrgan();
+  let wl=null; try{ if(navigator.wakeLock) wl=await navigator.wakeLock.request('screen'); }catch(e){}
   try{
     const sup=await organSupport(); if(!sup.ok) throw new Error(sup.why);
     if(!window.isSecureContext) throw new Error('보안 주소(https)에서만 쓸 수 있어요.');
     const lib=await importWebLLM();
-    const size=(S.organ&&S.organ.model)==='0.5B'?'0.5B':'1.5B';
-    const id=`Qwen2.5-${size}-Instruct-${sup.f16?'q4f16_1':'q4f32_1'}-MLC`;
+    const pick=(S.organ&&S.organ.model)||'1.5B';
+    const size=pick.startsWith('0.5B')?'0.5B':'1.5B';
+    const useF16=sup.f16 && !pick.endsWith('-f32');
+    const id=`Qwen2.5-${size}-Instruct-${useF16?'q4f16_1':'q4f32_1'}-MLC`;
     const list=(lib.prebuiltAppConfig&&lib.prebuiltAppConfig.model_list||[]).map(m=>m.model_id);
     if(list.length && !list.includes(id)) throw new Error('모델 목록에 없어요: '+id);
     ORG.engine=await lib.CreateMLCEngine(id,{initProgressCallback:r=>{ ORG.progress=r.progress||0; ORG.text=r.text||''; renderOrgan(); }});
@@ -513,7 +516,9 @@ async function loadOrgan(){
     addLog('sys','언어 기관이 켜졌어요.');
   }catch(e){
     ORG.state='error'; ORG.err=String(e&&e.message||e); ORG.engine=null;
+    if(/mapAsync|unmapped|device|lost|memory/i.test(ORG.err)) ORG.err+='\n(기기의 그래픽 메모리가 모자라거나 화면이 꺼지면서 GPU가 끊긴 경우가 많아요. 다른 탭과 앱을 닫고, 모델을 "호환 모드" 또는 0.5B로 바꿔 다시 켜 보세요.)';
   }
+  try{ if(wl) wl.release(); }catch(e){}
   renderOrgan(); renderState();
 }
 async function unloadOrgan(){
@@ -659,6 +664,8 @@ function tick(){
   if(!S) return;
   const now=Date.now(), dt=(now-lastTick)/1000; lastTick=now;
   if(!isAwake()){ renderState(); return; }
+  if(ORG.state==='loading'){ renderState(); return; }
+  if(ORG.state==='loading'){ renderState(); return; }
   if(DREAM){ dreamStep(); if(now-lastSaveAt>15000 && dirty) save(); return; }
   S.awakeSec += Math.min(dt,2);
   const src=pickSource(S.sources);
