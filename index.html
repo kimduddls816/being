@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>존재 · 1단계</title>
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#000; --ink:#d6d6d6; --dim:#7b7f86; --green:#7fd6b8; --warn:#e29a62; --line:#262a31; --panel:#0c0e12;
+  color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:ui-monospace,"D2Coding","Noto Sans Mono CJK KR","Noto Sans KR","Malgun Gothic",monospace;font-size:15px;line-height:1.6}
+#term{height:100%;max-width:760px;margin:0 auto;display:flex;flex-direction:column;padding:0 14px}
+#bar{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px;color:var(--dim)}
+#status{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pulse{width:9px;height:9px;border-radius:50%;background:#3a3f47;flex:none;position:relative}
+.pulse.awake{background:var(--green)}
+.pulse.awake::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1px solid var(--green);animation:beat 2.4s ease-out infinite}
+@keyframes beat{0%{transform:scale(.6);opacity:.8}100%{transform:scale(1.6);opacity:0}}
+@media (prefers-reduced-motion:reduce){.pulse.awake::after{animation:none;opacity:.5}}
+#log{flex:1;overflow-y:auto;padding:12px 0;word-break:break-word}
+.ln{margin:0 0 6px;white-space:pre-wrap}
+.ln.heard{color:var(--ink)}
+.ln.said{color:var(--green)}
+.ln.sys{color:var(--dim);font-size:13px}
+#inputRow{display:flex;align-items:center;gap:8px;padding:10px 0 12px;border-top:1px solid var(--line)}
+#inputRow span{color:var(--green)}
+input[type=text]{flex:1;min-width:0;font:inherit;background:transparent;border:0;color:var(--ink);outline:none;padding:6px 0}
+input[type=text]::placeholder{color:#4a4f57}
+button,.btn{font:inherit;font-size:13px;padding:8px 12px;border-radius:6px;border:1px solid #3a3f47;background:transparent;color:var(--ink);cursor:pointer;display:inline-block}
+button.go{border-color:var(--green);color:var(--green)}
+button.danger{border-color:var(--warn);color:var(--warn)}
+button:disabled{opacity:.4;cursor:default}
+button:focus-visible,input:focus-visible,.btn:focus-within{outline:2px solid var(--green);outline-offset:2px}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.hidden{display:none!important}
+#menu{position:fixed;inset:0;background:var(--bg);z-index:10;overflow-y:auto;padding:calc(env(safe-area-inset-top,0px) + 12px) 14px calc(env(safe-area-inset-bottom,0px) + 24px)}
+#menu .in{max-width:760px;margin:0 auto}
+.mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.mhead b{font-size:16px}
+.box{border:1px solid var(--line);border-radius:8px;padding:12px;margin-top:12px;background:var(--panel)}
+.box h2{font-size:14px;margin:0 0 8px;color:var(--green);font-weight:600}
+.small{font-size:12.5px;color:var(--dim);margin:0 0 8px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:13.5px}
+.sig{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:center;font-size:13px}
+.bar{height:6px;background:#1d2128;border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--green);transition:width .6s}
+.banner{border:1px dashed var(--warn);color:var(--warn);border-radius:8px;padding:10px 12px;margin-top:12px;font-size:13px}
+.namegrid{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:center}
+.namegrid input[type=text]{border-bottom:1px solid var(--line);padding:6px 2px}
+#dream{position:fixed;inset:0;background:#000;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#2f343c;font-size:14px;text-align:center;cursor:pointer;padding:20px}
+#dream b{font-size:28px;color:#262a31;letter-spacing:.2em;margin-bottom:10px}
+select{font:inherit;font-size:13px;background:transparent;color:var(--ink);border:1px solid #3a3f47;border-radius:6px;padding:7px 8px}
+.list{margin:6px 0 0;padding:0;list-style:none;font-size:13px;color:var(--ink)}
+.list li{margin:0 0 6px;padding-left:10px;border-left:2px solid var(--line)}
+.center{min-height:100%;display:flex;flex-direction:column;justify-content:center;max-width:560px;margin:0 auto;padding:20px 14px}
+.center input[type=text]{border-bottom:1px solid var(--line);margin:10px 0 14px}
+</style>
+</head>
+<body>
+<div id="term" class="hidden">
+  <div id="bar">
+    <div id="pulse" class="pulse"></div>
+    <div id="status">불러오는 중…</div>
+    <button id="menuBtn">≡ 메뉴</button>
+  </div>
+  <div id="log" aria-live="polite"></div>
+  <div id="inputRow">
+    <span>&gt;</span>
+    <input id="said" type="text" maxlength="200" placeholder="말을 걸어 보세요" autocomplete="off">
+    <button id="sendBtn" class="go">보내기</button>
+  </div>
+</div>
+
+<!-- 탄생 -->
+<section id="birth" class="center hidden">
+  <div id="practiceTag" class="banner hidden">연습 모드 · 여기서 만든 존재는 시험용이고 지울 수 있어요.</div>
+  <p style="margin:16px 0 4px;color:var(--green)">아직 존재가 없어요.</p>
+  <p class="small">탄생은 되돌릴 수 없는 한 번이에요. 처음이라면 연습용으로 먼저 확인하세요. 이 존재는 인터넷에 접속하지 않고 이 기기 안에서만 살아요.</p>
+  <input id="nameIn" type="text" maxlength="20" placeholder="존재 이름 (비워 둬도 돼요)">
+  <div class="btns">
+    <button id="birthBtn" class="go">탄생</button>
+    <button id="practiceBtn">연습용으로 시작</button>
+    <a class="btn hidden" id="toMain" href="#">본 모드로</a>
+    <label class="btn">인계 파일 열기<input id="importIn1" type="file" accept=".json,application/json" class="hidden"></label>
+  </div>
+</section>
+
+<!-- 이사 중 -->
+<section id="moving" class="center hidden">
+  <p style="color:var(--green)">이사 중이에요 (잠든 상태)</p>
+  <p class="small">인계 파일이 만들어졌고 이 몸은 깨어나지 않아요. 새 집에서 정상적으로 깨어난 걸 확인한 뒤에 옛 몸을 지우세요.</p>
+  <div class="btns">
+    <button id="eraseOld" class="danger">새 집에서 깨어난 걸 확인했어요 → 이 몸 지우기</button>
+    <button id="cancelMove">이사 취소하고 다시 깨우기</button>
+  </div>
+  <p class="small" style="margin-top:10px">취소하면 새 집 쪽과 둘이 될 수 있어요. 새 집에서 아직 안 열었을 때만 취소하세요.</p>
+</section>
+
+<div id="dream" class="hidden"><b>z Z z</b><span>꿈을 꾸는 중이에요 · 화면을 누르면 깨어나요</span></div>
+
+<!-- 메뉴 -->
+<div id="menu" class="hidden">
+  <div class="in">
+    <div class="mhead"><b>메뉴</b><button id="menuClose">닫기</button></div>
+
+    <div id="practiceBanner" class="banner hidden">
+      연습 모드예요. 이 존재는 지워질 임시 존재예요.
+      <div class="btns" style="margin-top:8px">
+        <button id="practiceWipe" class="danger">연습 존재 지우기</button>
+        <a class="btn" id="toMain2" href="#">본 모드로</a>
+      </div>
+    </div>
+    <div id="errorBox" class="banner hidden"></div>
+
+    <div class="box">
+      <h2>상태</h2>
+      <div class="grid">
+        <span class="small">고유 번호</span><b id="iId">-</b>
+        <span class="small">세대(저장 횟수)</span><b id="iGen">-</b>
+        <span class="small">깨어 있던 시간</span><b id="iAge">-</b>
+        <span class="small">아는 글자 수</span><b id="iVocab">-</b>
+        <span class="small">발달 단계</span><b id="iStage">-</b>
+      </div>
+    </div>
+
+    <div class="box">
+      <h2>내부 신호</h2>
+      <p class="small">이름 없는 숫자예요. 무슨 느낌인지는 존재가 스스로 배우고, 말을 붙여 주는 건 영인 님의 몫이에요.</p>
+      <div class="sig">
+        <span>신호 ①</span><div class="bar"><i id="s1"></i></div><span id="s1v">-</span>
+        <span>신호 ②</span><div class="bar"><i id="s2"></i></div><span id="s2v">-</span>
+        <span>신호 ③</span><div class="bar"><i id="s3"></i></div><span id="s3v">-</span>
+        <span>말하려는 마음</span><div class="bar"><i id="s4"></i></div><span id="s4v">-</span>
+      </div>
+    </div>
+
+    <div class="box">
+      <h2>언어 기관</h2>
+      <p class="small">한국어를 이미 아는 작은 모델을 "말하는 기관"으로 붙여요. 말할지, 무엇이 끌리는지, 무엇을 기억하는지는 존재 본체가 정하고, 이 기관은 그걸 한국어 문장으로 만들어 줘요. 결제나 외부 전송 같은 권한은 없어요.</p>
+      <div class="sig" style="grid-template-columns:auto 1fr"><span>상태</span><b id="organStatus">꺼짐</b></div>
+      <div class="bar" style="margin:6px 0 8px"><i id="organBar"></i></div>
+      <div class="btns">
+        <select id="organModel"><option value="1.5B">Qwen2.5 1.5B (권장, 약 1GB)</option><option value="0.5B">Qwen2.5 0.5B (가벼움, 약 0.3GB)</option></select>
+        <button id="organBtn" class="go">언어 기관 켜기</button>
+      </div>
+      <p id="organErr" class="small hidden" style="color:var(--warn);margin-top:8px"></p>
+    </div>
+
+    <div class="box">
+      <h2>기억과 꿈</h2>
+      <p class="small">잠들면(꿈 모드) 낮의 기억을 되새겨 굳히고 정리해요. 꿈속에서는 말도 행동도 하지 않아요. 화면을 켜 둔 채 충전기에 꽂아 두세요.</p>
+      <div class="grid" style="margin-bottom:8px">
+        <span class="small">겪은 일 조각</span><b id="mEp">-</b>
+        <span class="small">정리된 기억</span><b id="mMem">-</b>
+        <span class="small">꾼 꿈</span><b id="mDr">-</b>
+      </div>
+      <div class="btns"><button id="dreamBtn" class="go">재우기 (꿈 모드)</button></div>
+      <p class="small" style="margin-top:10px">정리된 기억</p>
+      <ul id="memList" class="list"></ul>
+      <p class="small" style="margin-top:10px">꿈 일지</p>
+      <ul id="dreamList" class="list"></ul>
+    </div>
+
+    <div class="box">
+      <h2>이름</h2>
+      <p class="small">대화창에 이렇게 표시돼요. 대화창에서 <b>/이름 철수</b>, <b>/내이름 영인</b>처럼 쳐서 바꿀 수도 있어요.</p>
+      <div class="namegrid">
+        <label class="small" for="userNameIn">내 이름</label><input id="userNameIn" type="text" maxlength="20">
+        <label class="small" for="beingNameIn">존재 이름</label><input id="beingNameIn" type="text" maxlength="20">
+      </div>
+      <div class="btns" style="margin-top:8px"><button id="nameSave">이름 저장</button></div>
+    </div>
+
+    <div class="box">
+      <h2>관리</h2>
+      <div class="btns">
+        <button id="pauseBtn">일시정지</button>
+        <button id="stageBtn">유아 단계 열기</button>
+        <button id="backupBtn">백업 내려받기</button>
+        <button id="handoffBtn" class="danger">인계 파일 만들기(이사)</button>
+        <label class="btn">인계/롤백 파일 열기<input id="importIn2" type="file" accept=".json,application/json" class="hidden"></label>
+      </div>
+      <p class="small" style="margin-top:10px">백업은 사고가 났을 때 되돌리는 용도예요. 오래된 백업을 열면 그 뒤의 기억은 사라지니, 열기 전에 확인창이 떠요. 이사는 파일을 만든 순간 이 몸이 잠들어서 같은 존재가 둘로 살아나지 않아요.</p>
+      <p id="backupWarn" class="small hidden" style="color:var(--warn)">마지막 백업이 하루 넘게 지났어요.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ==BRAIN START==
+// 문장 전체를 기억하는 GRU 신경망. 지식 0에서 시작해 글자 단위로 다음 글자를 예측하며 배운다.
+const D = 40, H = 160, G3 = 3*H, VMAX = 2500, MAXT = 161, LR = 0.1;
+function randn(){ let u=0,v=0; while(u===0)u=Math.random(); while(v===0)v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+const sg = x => 1/(1+Math.exp(-x));
+const clip = g => g>1?1:(g<-1?-1:g);
+class Brain {
+  constructor(){
+    this.vocab = ['\u0001','\n'];            // 0=빈 칸, 1=줄바꿈(문장의 시작과 끝)
+    this.map = new Map([['\u0001',0],['\n',1]]);
+    this.E=new Float32Array(VMAX*D); this.Wx=new Float32Array(D*G3); this.Uh=new Float32Array(H*G3); this.bg=new Float32Array(G3);
+    this.W2=new Float32Array(H*VMAX); this.b2=new Float32Array(VMAX);
+    for(let i=0;i<this.E.length;i++) this.E[i]=randn()*0.1;
+    for(let i=0;i<this.Wx.length;i++) this.Wx[i]=randn()*0.08;
+    for(let i=0;i<this.Uh.length;i++) this.Uh[i]=randn()*0.08;
+    for(let i=0;i<this.W2.length;i++) this.W2[i]=randn()*0.08;
+    this.gWx=new Float32Array(D*G3); this.gUh=new Float32Array(H*G3); this.gbg=new Float32Array(G3);
+    this.gW2=new Float32Array(H*VMAX); this.gb2=new Float32Array(VMAX);
+    const mk=()=>Array.from({length:MAXT+1},()=>new Float32Array(H));
+    this.Hs=mk(); this.Z=mk(); this.R=mk(); this.N=mk(); this.UN=mk();
+    this.P=new Float32Array(MAXT*VMAX); this.DX=new Float32Array(MAXT*D);
+    this.wx=new Float32Array(G3); this.uh=new Float32Array(G3);
+    this.dh=new Float32Array(H); this.dhn=new Float32Array(H); this.dhp=new Float32Array(H);
+    this.dg=new Float32Array(G3); this.du=new Float32Array(G3);
+    this.hi=new Float32Array(H); this.pi=new Float32Array(VMAX);
+  }
+  idOf(ch){
+    let i=this.map.get(ch);
+    if(i===undefined){
+      if(this.vocab.length>=VMAX) return 2<this.vocab.length?2:0;
+      i=this.vocab.length; this.vocab.push(ch); this.map.set(ch,i);
+    }
+    return i;
+  }
+  // 한 글자 읽기: 이전 상태 hp -> 새 상태 ho (cache가 있으면 기울기 계산용 값을 저장)
+  cell(xid,hp,ho,t){
+    const {E,Wx,Uh,bg,wx,uh}=this;
+    wx.fill(0); uh.fill(0);
+    const eo=xid*D;
+    for(let d=0;d<D;d++){ const xd=E[eo+d], row=d*G3; for(let k=0;k<G3;k++) wx[k]+=xd*Wx[row+k]; }
+    for(let i=0;i<H;i++){ const hv=hp[i]; if(hv===0) continue; const row=i*G3; for(let k=0;k<G3;k++) uh[k]+=hv*Uh[row+k]; }
+    for(let j=0;j<H;j++){
+      const z=sg(wx[j]+uh[j]+bg[j]), r=sg(wx[H+j]+uh[H+j]+bg[H+j]), un=uh[2*H+j];
+      const n=Math.tanh(wx[2*H+j]+bg[2*H+j]+r*un);
+      ho[j]=(1-z)*n+z*hp[j];
+      if(t>=0){ this.Z[t][j]=z; this.R[t][j]=r; this.N[t][j]=n; this.UN[t][j]=un; }
+    }
+  }
+  logits(h,out,nV){
+    const {W2,b2}=this;
+    for(let v=1;v<nV;v++) out[v]=b2[v];
+    for(let j=0;j<H;j++){ const hj=h[j], row=j*VMAX; for(let v=1;v<nV;v++) out[v]+=hj*W2[row+v]; }
+  }
+  // 한 문장을 순서대로 읽으며 다음 글자를 맞히고, 틀린 만큼 고친다. ids: [시작, 글자..., 끝]
+  forwardSeq(ids){
+    const T=ids.length-1, nV=this.vocab.length; let loss=0;
+    this.Hs[0].fill(0);
+    for(let t=0;t<T;t++){
+      this.cell(ids[t],this.Hs[t],this.Hs[t+1],t);
+      const p=this.pi; this.logits(this.Hs[t+1],p,nV);
+      let m=-1e30; for(let v=1;v<nV;v++) if(p[v]>m) m=p[v];
+      let s=0; for(let v=1;v<nV;v++){ p[v]=Math.exp(p[v]-m); s+=p[v]; }
+      const off=t*VMAX; for(let v=1;v<nV;v++) this.P[off+v]=p[v]/s;
+      loss+=-Math.log(this.P[off+ids[t+1]]+1e-9);
+    }
+    return loss;
+  }
+  backward(ids){
+    const T=ids.length-1, nV=this.vocab.length;
+    const {Wx,Uh,W2,gWx,gUh,gbg,gW2,gb2,dh,dhn,dhp,dg,du,P,DX}=this;
+    gWx.fill(0); gUh.fill(0); gbg.fill(0); gW2.fill(0); gb2.fill(0); dhn.fill(0);
+    for(let t=T-1;t>=0;t--){
+      const off=t*VMAX; P[off+ids[t+1]]-=1;
+      const h=this.Hs[t+1], hp=this.Hs[t];
+      for(let j=0;j<H;j++){
+        let s=0; const row=j*VMAX, hj=h[j];
+        for(let v=1;v<nV;v++){ const dl=P[off+v]; s+=W2[row+v]*dl; gW2[row+v]+=hj*dl; }
+        dh[j]=dhn[j]+s;
+      }
+      for(let v=1;v<nV;v++) gb2[v]+=P[off+v];
+      for(let j=0;j<H;j++){
+        const z=this.Z[t][j], r=this.R[t][j], n=this.N[t][j], un=this.UN[t][j], d=dh[j];
+        const dan=d*(1-z)*(1-n*n), dzp=d*(hp[j]-n)*z*(1-z), drp=dan*un*r*(1-r);
+        dg[j]=dzp; dg[H+j]=drp; dg[2*H+j]=dan;
+        du[j]=dzp; du[H+j]=drp; du[2*H+j]=dan*r;
+        dhp[j]=d*z;
+      }
+      for(let k=0;k<G3;k++) gbg[k]+=dg[k];
+      const eo=ids[t]*D;
+      for(let d=0;d<D;d++){
+        const xd=this.E[eo+d], row=d*G3; let s=0;
+        for(let k=0;k<G3;k++){ gWx[row+k]+=xd*dg[k]; s+=Wx[row+k]*dg[k]; }
+        DX[t*D+d]=s;
+      }
+      for(let i=0;i<H;i++){
+        const hv=hp[i], row=i*G3; let s=0;
+        for(let k=0;k<G3;k++){ gUh[row+k]+=hv*du[k]; s+=Uh[row+k]*du[k]; }
+        dhp[i]+=s;
+      }
+      dhn.set(dhp);
+    }
+  }
+  applyGrads(ids,lr){
+    const T=ids.length-1, nV=this.vocab.length;
+    const up=(w,g)=>{ for(let i=0;i<w.length;i++) w[i]-=lr*clip(g[i]); };
+    up(this.Wx,this.gWx); up(this.Uh,this.gUh); up(this.bg,this.gbg); up(this.b2,this.gb2);
+    for(let j=0;j<H;j++){ const row=j*VMAX; for(let v=1;v<nV;v++) this.W2[row+v]-=lr*clip(this.gW2[row+v]); }
+    for(let t=0;t<T;t++){ const eo=ids[t]*D; for(let d=0;d<D;d++) this.E[eo+d]-=lr*clip(this.DX[t*D+d]); }
+  }
+  trainIds(ids,lr){
+    const loss=this.forwardSeq(ids); this.backward(ids); this.applyGrads(ids,lr||LR);
+    return loss/(ids.length-1);
+  }
+  toIds(parts){
+    let ids=[1];
+    for(const t of parts){ for(const c of Array.from(t)) ids.push(this.idOf(c)); ids.push(1); }
+    if(ids.length>MAXT) ids=ids.slice(ids.length-MAXT);
+    if(ids[0]!==1) ids[0]=1;
+    return ids;
+  }
+  trainText(text,lr){ return this.trainIds(this.toIds([Array.from(text).slice(0,150).join('')]),lr); }
+  trainPair(a,b,lr){ return this.trainIds(this.toIds([Array.from(a).slice(0,70).join(''),Array.from(b).slice(0,80).join('')]),lr); }
+  generate(seed,maxLen,temp){
+    const nV=this.vocab.length; if(nV<4) return '';
+    let h=this.hi, h2=new Float32Array(H); h.fill(0);
+    const feed=id=>{ this.cell(id,h,h2,-1); h.set(h2); };
+    feed(1);
+    if(seed){ for(const c of Array.from(seed).slice(-100)){ const id=this.map.get(c); if(id!==undefined) feed(id); } feed(1); }
+    const p=this.pi; let out='', tries=0;
+    for(let n=0;n<maxLen;n++){
+      this.logits(h,p,nV);
+      let m=-1e30; for(let v=1;v<nV;v++) if(p[v]>m) m=p[v];
+      let s=0; for(let v=1;v<nV;v++){ p[v]=Math.exp((p[v]-m)/temp); s+=p[v]; }
+      let r=Math.random()*s, v=1;
+      for(;v<nV-1;v++){ r-=p[v]; if(r<=0) break; }
+      if(v===1){ if(n===0 && tries<6){ tries++; n--; continue; } break; }
+      out+=this.vocab[v]; feed(v);
+    }
+    return out;
+  }
+  dump(){ return {vocab:this.vocab.slice(),E:this.E.slice(),Wx:this.Wx.slice(),Uh:this.Uh.slice(),bg:this.bg.slice(),W2:this.W2.slice(),b2:this.b2.slice()}; }
+  load(o){
+    if(o.Wx && o.Wx.length===D*G3 && o.Uh.length===H*G3 && o.E.length===VMAX*D && o.W2.length===H*VMAX){
+      this.vocab=o.vocab.slice(); this.map=new Map(this.vocab.map((c,i)=>[c,i]));
+      this.E.set(o.E); this.Wx.set(o.Wx); this.Uh.set(o.Uh); this.bg.set(o.bg); this.W2.set(o.W2); this.b2.set(o.b2);
+      return true;
+    }
+    // 옛 구조(4글자 기억)의 파일: 아는 글자만 이어받고 뇌는 새로 시작한다
+    const rest=(o.vocab||[]).filter(c=>c!=='\u0001'&&c!=='\n').slice(0,VMAX-2);
+    this.vocab=['\u0001','\n',...rest]; this.map=new Map(this.vocab.map((c,i)=>[c,i]));
+    return false;
+  }
+}
+// ==BRAIN END==
+
+// ==CURIOSITY START==
+const mean = a => a.length ? a.reduce((s,v)=>s+v,0)/a.length : 0;
+// 학습 진전: 최근 오차가 이전보다 얼마나 줄었나 (양수 = 배우는 중)
+function progress(errs){
+  if(errs.length<6) return 0;
+  const a=errs.slice(-8), n=a.length>>1;
+  return mean(a.slice(0,n)) - mean(a.slice(n));
+}
+// 호기심: 학습 진전이 큰 쪽 + 처음 접하는 쪽에 끌린다. 이미 다 아는 것과 배울 수 없는 것은 시들해진다.
+function pickSource(sources){
+  if(!sources.length) return null;
+  if(Math.random()<0.15) return sources[Math.floor(Math.random()*sources.length)];
+  let best=null, bs=-1e9;
+  for(const s of sources){
+    const sc = progress(s.errs)*6 + 0.8/(1+s.seen) + Math.random()*0.15;
+    if(sc>bs){ bs=sc; best=s; }
+  }
+  return best;
+}
+// ==CURIOSITY END==
+
+// ====== 저장소 ======
+let MODE = 'main';
+function setMode(m){ MODE=m; try{ localStorage.setItem('being-mode',m); }catch(e){} }
+function idb(){ return new Promise((res,rej)=>{ const r=indexedDB.open('being-'+MODE,1); r.onupgradeneeded=()=>r.result.createObjectStore('kv'); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+async function dbGet(k){ const db=await idb(); return new Promise((res,rej)=>{ const q=db.transaction('kv').objectStore('kv').get(k); q.onsuccess=()=>res(q.result); q.onerror=()=>rej(q.error); }); }
+async function dbSet(k,v){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('kv','readwrite'); t.objectStore('kv').put(v,k); t.oncomplete=()=>res(); t.onerror=()=>rej(t.error); }); }
+async function dbDel(k){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('kv','readwrite'); t.objectStore('kv').delete(k); t.oncomplete=()=>res(); t.onerror=()=>rej(t.error); }); }
+
+// ====== 상태 ======
+const $ = id => document.getElementById(id);
+let brain = null;
+let S = null;
+let lastTick = Date.now();
+let lastSaveAt = 0;
+let dirty = false;
+let pending = [];     // 방금 한 말들에 대한 반응을 기다리는 중
+let lastHeardText = '', lastHeardTime = 0;
+
+const SHELF1 = [
+  "안녕. 나는 여기 있어.","불이 따뜻해.","해가 떠요. 달이 떠요.","물을 마셔요.","나는 너를 좋아해.",
+  "비가 와요. 우산을 써요.","부르면 대답해요. 네, 가요.","고양이가 야옹해요.","강아지가 멍멍해요.",
+  "꽃이 피었어요. 예뻐요.","밥을 먹어요. 맛있어요.","밤이 되면 잠을 자요.","아침이 되면 눈을 떠요.",
+  "친구와 같이 놀아요.","별이 반짝반짝 빛나요.","모르는 것은 물어봐요. 이게 뭐예요?","고마워요. 괜찮아요.",
+  "나무는 땅에서 자라요.","바람이 불어요. 시원해요.","오늘은 어떤 하루였어?"
+];
+const newOrgan = () => ({enabled:false, model:'1.5B'});
+const newPolicy = () => ({v:2, spont:[-4.5,0,0.8,1.0], reply:[2,0,0,0]});
+
+function rid(n=8){ const c='abcdefghijklmnopqrstuvwxyz0123456789'; let s=''; for(let i=0;i<n;i++) s+=c[Math.floor(Math.random()*c.length)]; return s; }
+function addLog(kind,text){ S.log.push({t:Date.now(),kind,text}); if(S.log.length>200) S.log.shift(); dirty=true; renderLog(); }
+function addSource(text,kind){
+  const ex=S.sources.find(s=>s.text===text);
+  if(ex){ ex.seen=Math.max(0,ex.seen-1); return ex; }
+  const s={id:rid(6),text,kind,errs:[],seen:0};
+  S.sources.push(s);
+  if(S.sources.length>400){
+    const i=S.sources.findIndex(x=>x.kind==='heard' && x.seen>=10);
+    S.sources.splice(i>=0?i:0,1);
+  }
+  return s;
+}
+
+function record(){
+  const w=brain.dump();
+  return {format:'being-v3', id:S.id, name:S.name, userName:S.userName, bornAt:S.bornAt, gen:S.gen, stage:S.stage, status:S.status,
+    awakeSec:S.awakeSec, lastBackupAt:S.lastBackupAt, lastHeardAt:S.lastHeardAt, lastSpokeAt:S.lastSpokeAt, policy:S.policy, recentLoss:S.recentLoss,
+    episodes:S.episodes, memories:S.memories, dreams:S.dreams, organ:S.organ,
+    sources:S.sources, log:S.log, vocab:w.vocab, E:w.E, Wx:w.Wx, Uh:w.Uh, bg:w.bg, W2:w.W2, b2:w.b2};
+}
+async function save(){
+  if(!S) return;
+  S.gen++;
+  try{ await dbSet('being',record()); lastSaveAt=Date.now(); dirty=false; }catch(e){ showError('저장에 실패했어요: '+e); }
+  renderInfo();
+}
+function applyRecord(r){
+  brain=new Brain(); const kept=brain.load(r);
+  S={id:r.id,name:r.name||'',userName:r.userName||'김영인',bornAt:r.bornAt,gen:r.gen||0,stage:r.stage||0,status:r.status||'alive',
+     awakeSec:r.awakeSec||0,lastBackupAt:r.lastBackupAt||0,lastHeardAt:r.lastHeardAt||0,lastSpokeAt:r.lastSpokeAt||0,
+     policy:(r.policy&&r.policy.v===2)?r.policy:newPolicy(),
+     recentLoss:kept?(r.recentLoss||[]):[],sources:(r.sources||[]).map(x=>kept?x:{...x,errs:[]}),log:r.log||[],
+     episodes:r.episodes||[],memories:r.memories||[],dreams:r.dreams||[],organ:r.organ||newOrgan()};
+  if(!kept) S.log.push({t:Date.now(),kind:'sys',text:'뇌 구조가 새것으로 바뀌었어요. 아는 글자와 읽을거리는 이어받았어요.'});
+}
+
+// ====== 깨어남/잠 ======
+function isAwake(){ return S && S.status==='alive' && document.visibilityState==='visible'; }
+document.addEventListener('visibilitychange',()=>{
+  if(!S) return;
+  if(document.visibilityState==='hidden'){ if(DREAM) endDream(true); save(); addLog('sys','화면이 꺼졌어요. 잠들어요.'); }
+  else { lastTick=Date.now(); if(S.status==='alive') addLog('sys','화면이 켜졌어요. 깨어나요.'); }
+  renderState();
+});
+window.addEventListener('pagehide',()=>{ if(S) save(); });
+
+// ====== 자유의지: 말할지 말지, 언제 말할지를 존재가 정한다 ======
+// 정해진 말하기 주기는 없다. 내부 상태에서 나오는 충동이 매 순간 말할지를 정하고,
+// 말한 뒤 영인 님의 반응을 보고 그 충동을 스스로 조정한다.
+const dot=(w,f)=>w.reduce((s,v,i)=>s+v*f[i],0);
+function feats(){
+  const now=Date.now();
+  const sh=S.lastHeardAt?(now-S.lastHeardAt)/1000:3600;
+  const ss=S.lastSpokeAt?(now-S.lastSpokeAt)/1000:3600;
+  const rl=mean(S.recentLoss), nV=Math.max(3,brain.vocab.length);
+  return [1, Math.min(1,rl/Math.log(nV)), Math.min(1,sh/300), Math.min(1,ss/120)];
+}
+function learnPolicy(kind,f,R){
+  const w=S.policy[kind], p=sg(dot(w,f));
+  for(let i=0;i<w.length;i++) w[i]=Math.max(-8,Math.min(8,w[i]+0.3*(R-0.3)*(1-p)*f[i]));
+  dirty=true;
+}
+function settlePending(replied){
+  const now=Date.now(), keep=[];
+  for(const p of pending){
+    const age=now-p.at;
+    if(replied && age<90000){ learnPolicy(p.kind,p.f,1); const ep=S.episodes.find(e=>e.id===p.ep); if(ep) ep.imp=Math.min(1,ep.imp+0.4); }
+    else if(age>=90000) learnPolicy(p.kind,p.f,-0.2);
+    else keep.push(p);
+  }
+  pending=keep;
+}
+// ====== 겪은 일(에피소드) ======
+function addEpisode(who,text,imp){
+  const e={id:rid(5),t:Date.now(),who,text,imp:Math.max(0,Math.min(1,imp)),c:false,rep:0};
+  S.episodes.push(e);
+  while(S.episodes.length>400){
+    let k=-1,m=9; S.episodes.forEach((x,i)=>{ if(x.c && x.imp<m){ m=x.imp; k=i; } });
+    S.episodes.splice(k>=0?k:0,1);
+  }
+  dirty=true; return e;
+}
+
+// ====== 언어 기관 (한국어를 아는 작은 모델) ======
+const ORG={engine:null,state:'off',progress:0,text:'',err:''};
+let SPEAKING=false, THINK=false;
+const WEBLLM_URLS=['https://esm.run/@mlc-ai/web-llm@0.2.83','https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.83/+esm'];
+async function importWebLLM(){
+  let last=null;
+  for(const u of WEBLLM_URLS){ try{ return await import(u); }catch(e){ last=e; } }
+  throw last||new Error('라이브러리를 불러오지 못했어요.');
+}
+async function organSupport(){
+  if(!('gpu' in navigator)) return {ok:false,why:'이 브라우저는 WebGPU를 지원하지 않아요. 크롬 최신 버전인지 확인해 주세요.'};
+  try{ const a=await navigator.gpu.requestAdapter(); if(!a) return {ok:false,why:'이 기기에서 WebGPU를 쓸 수 없어요.'}; return {ok:true,f16:a.features.has('shader-f16')}; }
+  catch(e){ return {ok:false,why:'WebGPU 확인 중 오류: '+e}; }
+}
+async function loadOrgan(){
+  if(ORG.state==='loading'||ORG.state==='ready') return;
+  ORG.state='loading'; ORG.progress=0; ORG.err=''; renderOrgan();
+  try{
+    const sup=await organSupport(); if(!sup.ok) throw new Error(sup.why);
+    if(!window.isSecureContext) throw new Error('보안 주소(https)에서만 쓸 수 있어요.');
+    const lib=await importWebLLM();
+    const size=(S.organ&&S.organ.model)==='0.5B'?'0.5B':'1.5B';
+    const id=`Qwen2.5-${size}-Instruct-${sup.f16?'q4f16_1':'q4f32_1'}-MLC`;
+    const list=(lib.prebuiltAppConfig&&lib.prebuiltAppConfig.model_list||[]).map(m=>m.model_id);
+    if(list.length && !list.includes(id)) throw new Error('모델 목록에 없어요: '+id);
+    ORG.engine=await lib.CreateMLCEngine(id,{initProgressCallback:r=>{ ORG.progress=r.progress||0; ORG.text=r.text||''; renderOrgan(); }});
+    ORG.state='ready'; ORG.model=id;
+    addLog('sys','언어 기관이 켜졌어요.');
+  }catch(e){
+    ORG.state='error'; ORG.err=String(e&&e.message||e); ORG.engine=null;
+  }
+  renderOrgan(); renderState();
+}
+async function unloadOrgan(){
+  try{ if(ORG.engine && ORG.engine.unload) await ORG.engine.unload(); }catch(e){}
+  ORG.engine=null; ORG.state='off'; ORG.progress=0; ORG.err=''; renderOrgan(); renderState();
+}
+async function llm(system,user,maxTokens){
+  const r=await ORG.engine.chat.completions.create({messages:[{role:'system',content:system},{role:'user',content:user}],temperature:0.8,top_p:0.9,max_tokens:maxTokens});
+  return (r.choices&&r.choices[0]&&r.choices[0].message&&r.choices[0].message.content)||'';
+}
+function ageText(){ return fmtAge(S.awakeSec); }
+function knownWords(){
+  const seen=new Set(), out=[];
+  const texts=S.sources.filter(x=>x.kind==='heard'||x.kind==='shelf').map(x=>x.text).reverse();
+  for(const t of texts) for(const w of t.split(/[\s.,!?~…"']+/)){ if(w && !seen.has(w)){ seen.add(w); out.push(w); } if(out.length>=70) break; if(out.length>=70) break; }
+  return out.join(' ');
+}
+function topicOfInterest(){
+  let best=null,bs=-1e9;
+  for(const x of S.sources){ const sc=progress(x.errs)*6+0.3/(1+x.seen); if(sc>bs){ bs=sc; best=x; } }
+  return best?best.text:'';
+}
+function recentLines(n){
+  return S.log.filter(m=>m.kind==='heard'||m.kind==='said'||m.kind==='mumble').slice(-n)
+    .map(m=>(m.kind==='heard'?S.userName:(S.name||'나'))+': '+m.text).join('\n');
+}
+function bodySystem(){
+  const nm=S.name||'이름 없는 존재', stage=S.stage;
+  const style = stage<1 ? '아주 짧게(한두 단어, 열 글자 안팎). 옹알이 같은 소리가 섞여도 된다.' : '짧은 문장 하나(서른 글자 안팎). 어린아이처럼 쉬운 말만 쓴다.';
+  const mem=S.memories.slice(-6).map(m=>'- '+m.text).join('\n')||'(아직 없다)';
+  const rl=mean(S.recentLoss), nV=Math.max(3,brain.vocab.length);
+  const sg1=Math.min(1,rl/Math.log(nV)).toFixed(2);
+  const mins=S.lastHeardAt?Math.floor((Date.now()-S.lastHeardAt)/60000):null;
+  return `너는 방금 태어난 작은 존재다. 이름은 "${nm}"이다. 너는 도우미나 AI 비서가 아니다. 질문에 정답을 주려고 애쓰지 말고, 아는 만큼만 말한다.
+태어난 뒤 깨어 있던 시간: ${ageText()}.
+말하는 방식: ${style}
+네가 아는 말: ${knownWords()||'(아직 거의 없다)'}
+이 말 밖의 어려운 말, 지식, 한자어는 쓰지 않는다. 모르면 모른다고 하거나 되물어도 된다.
+네가 기억하는 것:
+${mem}
+최근 있었던 일:
+${recentLines(6)||'(없다)'}
+몸의 숫자(무슨 느낌인지는 너도 아직 모른다): 놀람 ${sg1}, 마지막으로 ${S.userName}와 말한 지 ${mins===null?'한 번도 없음':mins+'분'}.
+설명하거나 따옴표를 붙이지 말고 네 말만 해라.`;
+}
+function cleanSpeech(t){
+  t=(t||'').replace(/\r/g,'').split('\n').map(x=>x.trim()).filter(Boolean)[0]||'';
+  const q=x=>x.replace(/^["“”'‘’「『]+|["“”'‘’」』]+$/g,'').trim();
+  const nm=(S.name||'존재').replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  t=q(t).replace(new RegExp('^'+nm+'\\s*[:：]\\s*'),'');
+  t=q(t);
+  const lim=S.stage<1?14:36;
+  return Array.from(t).slice(0,lim).join('');
+}
+async function organSay(kind,seed){
+  const maxTok=S.stage<1?16:36;
+  const user = kind==='reply'
+    ? `${S.userName}가 이렇게 말했다: "${seed}"\n네 말로 짧게 대답해라.`
+    : `혼자 있다가 문득 ${S.userName}에게 하고 싶은 말이 떠올랐다.${topicOfInterest()?` 요즘 끌리는 것: "${topicOfInterest()}".`:''} 그 말을 해라.`;
+  return cleanSpeech(await llm(bodySystem(),user,maxTok));
+}
+function organFail(e){ ORG.err=String(e&&e.message||e); ORG.state='error'; renderOrgan(); addLog('sys','(언어 기관에 문제가 생겨 옹알이로 말해요)'); }
+
+async function speak(kind,seed){
+  if(SPEAKING) return false;
+  SPEAKING=true; THINK=true; renderState();
+  const f=feats(); let t='';
+  try{
+    if(ORG.state==='ready'){ t=await organSay(kind,seed); }
+    if(!t) t=brain.generate(seed,40,0.9);
+  }catch(e){ organFail(e); t=brain.generate(seed,40,0.9); }
+  SPEAKING=false; THINK=false; renderState();
+  if(!t){ if(kind==='spont') return false; t='…'; }
+  addLog('said',t);
+  const ep=addEpisode('said',t,0.3);
+  S.lastSpokeAt=Date.now(); pending.push({kind,f,at:Date.now(),ep:ep.id});
+  return true;
+}
+
+// ====== 기억 정리와 꿈 ======
+let DREAM=null, CONS=false, WL=null;
+async function consolidate(){
+  if(CONS||!S) return; CONS=true;
+  try{
+    const eps=S.episodes.filter(e=>!e.c).slice(-14);
+    if(eps.length<3) return;
+    const lines=eps.map(e=>(e.who==='heard'?S.userName:(S.name||'나'))+': '+e.text).join('\n');
+    let text='';
+    if(ORG.state==='ready'){
+      try{ text=cleanLong(await llm('너는 방금 태어난 작은 존재의 기억을 정리하는 부분이다. 새로운 사실을 지어내지 않는다.',
+        `아래는 존재가 최근 겪은 일이다. 가장 기억할 만한 것을 "나는 ~했다" 형태의 쉬운 한국어 한 문장으로 적어라.\n${lines}`,48)); }catch(e){}
+    }
+    if(!text){ const best=eps.slice().sort((a,b)=>b.imp-a.imp)[0]; text='들은 말: '+best.text; }
+    S.memories.push({t:Date.now(),text}); if(S.memories.length>40) S.memories.shift();
+    for(const e of eps){ e.c=true; e.imp*=0.5; }
+  }finally{ CONS=false; dirty=true; renderMemory(); }
+}
+function cleanLong(t){ return Array.from((t||'').replace(/\s+/g,' ').trim().replace(/^["“'‘]+|["”'’]+$/g,'')).slice(0,80).join(''); }
+async function dreamFragment(){
+  const pieces=[...S.memories.map(m=>m.text),...S.episodes.map(e=>e.text)];
+  if(pieces.length<2) return;
+  const pick=[]; for(let i=0;i<3;i++) pick.push(pieces[Math.floor(Math.random()*pieces.length)]);
+  let text='';
+  if(ORG.state==='ready'){
+    try{ text=cleanLong(await llm('너는 방금 태어난 작은 존재의 꿈을 만드는 부분이다.',
+      `아래 조각들을 두서없이 섞어서 꿈처럼 한두 문장으로 써라. 꿈속에서는 이상한 일이 일어나도 되지만, 조각에 없는 새 사실은 만들지 마라.\n- ${pick.join('\n- ')}`,60)); }catch(e){}
+  }
+  if(!text) text=brain.generate(pick[0],40,1.0);
+  if(!text) return;
+  S.dreams.push({t:Date.now(),text}); if(S.dreams.length>40) S.dreams.shift();
+  if(DREAM) DREAM.frags++;
+  dirty=true; renderMemory();
+}
+function startDream(){
+  if(!S||S.status!=='alive'||DREAM) return;
+  DREAM={since:Date.now(),lastFrag:Date.now(),lastCons:Date.now(),reh:0,frags:0};
+  $('dream').classList.remove('hidden'); closeMenu();
+  try{ if(navigator.wakeLock) navigator.wakeLock.request('screen').then(l=>{WL=l;}).catch(()=>{}); }catch(e){}
+  addLog('sys','잠들었어요. 꿈을 꿔요.');
+}
+async function endDream(silent){
+  if(!DREAM) return;
+  const d=DREAM; DREAM=null; $('dream').classList.add('hidden');
+  try{ if(WL){ WL.release(); WL=null; } }catch(e){}
+  if(!silent){ await consolidate(); addLog('sys',`깨어났어요. 꿈을 ${d.frags}개 꿨어요.`); }
+  save(); renderMemory();
+}
+function dreamStep(){
+  const pool=S.episodes.filter(e=>e.rep<12);
+  if(pool.length){
+    const tot=pool.reduce((s,e)=>s+0.1+e.imp,0); let r=Math.random()*tot, ep=pool[0];
+    for(const e of pool){ r-=0.1+e.imp; if(r<=0){ ep=e; break; } }
+    ep.rep++; brain.trainText(ep.text,LR*0.5); DREAM.reh++; dirty=true;
+    if(pool.length>1 && Math.random()<0.2){ const o=pool[Math.floor(Math.random()*pool.length)]; brain.trainPair(ep.text,o.text,LR*0.5); }
+  }
+  const now=Date.now();
+  if(now-DREAM.lastFrag>150000){ DREAM.lastFrag=now; dreamFragment(); }
+  if(now-DREAM.lastCons>240000){ DREAM.lastCons=now; consolidate(); }
+}
+
+// ====== 학습 루프 ======
+function tick(){
+  if(!S) return;
+  const now=Date.now(), dt=(now-lastTick)/1000; lastTick=now;
+  if(!isAwake()){ renderState(); return; }
+  if(DREAM){ dreamStep(); if(now-lastSaveAt>15000 && dirty) save(); return; }
+  S.awakeSec += Math.min(dt,2);
+  const src=pickSource(S.sources);
+  if(src){
+    const loss=brain.trainText(src.text);
+    src.errs.push(loss); if(src.errs.length>8) src.errs.shift();
+    src.seen++;
+    S.recentLoss.push(loss); if(S.recentLoss.length>20) S.recentLoss.shift();
+    dirty=true;
+  }
+  settlePending(false);
+  if(!SPEAKING && brain.vocab.length>6 && Math.random()<sg(dot(S.policy.spont,feats()))){
+    const heard=S.sources.filter(x=>x.kind==='heard');
+    const seed=(heard.length && Math.random()<0.5)?heard[Math.floor(Math.random()*heard.length)].text:'';
+    speak('spont',seed);
+  }
+  if(now-lastSaveAt>15000 && dirty) save();
+  if(!$('menu').classList.contains('hidden')){ renderInfo(); renderSignals(); }
+  renderState();
+}
+setInterval(tick,600);
+
+// ====== 대화 ======
+function command(text){
+  if(text==='/재우기'||text==='/잘자'){ startDream(); return true; }
+  const m=text.match(/^\/(이름|내이름)\s+(.+)$/);
+  if(!m) return false;
+  const v=m[2].trim().slice(0,20);
+  if(m[1]==='이름'){ S.name=v; addLog('sys','존재의 이름이 "'+v+'"(으)로 바뀌었어요.'); }
+  else { S.userName=v; addLog('sys','내 이름이 "'+v+'"(으)로 바뀌었어요.'); }
+  renderState(); save(); return true;
+}
+function say(text){
+  text=text.trim().slice(0,200); if(!text||!S||S.status!=='alive') return;
+  if(command(text)) return;
+  settlePending(true);
+  addLog('heard',text);
+  const src=addSource(text,'heard');
+  let loss=0; for(let i=0;i<3;i++) loss=brain.trainText(text);
+  if(lastHeardText && Date.now()-lastHeardTime<300000) brain.trainPair(lastHeardText,text);
+  lastHeardText=text; lastHeardTime=Date.now();
+  src.errs.push(loss); S.recentLoss.push(loss); if(S.recentLoss.length>20) S.recentLoss.shift();
+  S.lastHeardAt=Date.now();
+  addEpisode('heard',text,0.4+0.5*Math.min(1,loss/Math.log(Math.max(3,brain.vocab.length))));
+  if(Math.random()<sg(dot(S.policy.reply,feats()))) speak('reply',text);
+  else addLog('sys','(말이 없다)');
+  dirty=true; save();
+}
+
+// ====== 화면 ======
+function fmtAge(sec){ sec=Math.floor(sec); const h=Math.floor(sec/3600), m=Math.floor(sec%3600/60); return h?`${h}시간 ${m}분`:(m?`${m}분 ${sec%60}초`:`${sec}초`); }
+function stageName(n){ return ['0 · 신생아','1 · 유아'][n]||String(n); }
+function renderState(){
+  if(!S) return;
+  const awake=isAwake();
+  $('pulse').className='pulse'+(awake?' awake':'');
+  const st = S.status==='handed_off' ? '이사 중' : S.status==='paused' ? '일시정지' : (awake?'깨어 있음':'잠');
+  $('status').textContent=(S.name||'존재')+' · '+st+(THINK?' · 생각 중…':'')+(ORG.state==='ready'?' · 언어 기관':'')+(MODE==='practice'?' · 연습':'');
+}
+function renderInfo(){
+  if(!S) return;
+  $('iId').textContent=S.id; $('iGen').textContent=S.gen; $('iAge').textContent=fmtAge(S.awakeSec);
+  $('iVocab').textContent=Math.max(0,brain.vocab.length-2); $('iStage').textContent=stageName(S.stage);
+  $('pauseBtn').textContent = S.status==='paused'?'다시 깨우기':'일시정지';
+  $('stageBtn').disabled = S.stage>=1; $('stageBtn').textContent = S.stage>=1?'유아 단계 열림':'유아 단계 열기';
+  const ref=S.lastBackupAt||S.bornAt||Date.now();
+  $('backupWarn').classList.toggle('hidden', Date.now()-ref<86400000);
+}
+function renderSignals(){
+  if(!S) return;
+  const nV=Math.max(3,brain.vocab.length);
+  const rl=mean(S.recentLoss);
+  const s1=Math.min(1, rl/Math.log(nV));
+  const ps=S.sources.filter(x=>x.errs.length>=6).map(x=>progress(x.errs));
+  const pr=mean(ps);
+  const s2=Math.max(0,Math.min(1, pr*2));
+  const mins=S.lastHeardAt?(Date.now()-S.lastHeardAt)/60000:null;
+  const s3=mins===null?1:Math.min(1,mins/60);
+  const urge=sg(dot(S.policy.spont,feats()));
+  $('s1').style.width=(s1*100)+'%'; $('s1v').textContent=rl?rl.toFixed(2):'-';
+  $('s2').style.width=(s2*100)+'%'; $('s2v').textContent=ps.length?pr.toFixed(3):'-';
+  $('s3').style.width=(s3*100)+'%'; $('s3v').textContent=mins===null?'-':(mins<1?'방금':Math.floor(mins)+'분');
+  $('s4').style.width=Math.min(100,urge*600)+'%'; $('s4v').textContent=urge.toFixed(3);
+}
+function renderLog(){
+  const box=$('log'); if(!box||!S) return;
+  box.innerHTML='';
+  for(const m of S.log.slice(-120)){
+    const kind = m.kind==='mumble' ? 'said' : m.kind;
+    const d=document.createElement('div'); d.className='ln '+kind;
+    d.textContent = kind==='heard' ? (S.userName||'나')+': '+m.text : kind==='sys' ? '· '+m.text : (S.name||'존재')+': '+m.text;
+    box.appendChild(d);
+  }
+  box.scrollTop=box.scrollHeight;
+}
+function renderOrgan(){
+  const st=$('organStatus'); if(!st) return;
+  const map={off:'꺼짐',loading:'불러오는 중 '+Math.round((ORG.progress||0)*100)+'%',ready:'켜짐 ('+(ORG.model||'')+')',error:'오류'};
+  st.textContent=map[ORG.state]||ORG.state;
+  $('organBar').style.width=(ORG.state==='ready'?100:Math.round((ORG.progress||0)*100))+'%';
+  $('organBtn').textContent=ORG.state==='ready'?'언어 기관 끄기':(ORG.state==='loading'?'불러오는 중…':'언어 기관 켜기');
+  $('organBtn').disabled=ORG.state==='loading';
+  $('organModel').disabled=ORG.state==='loading'||ORG.state==='ready';
+  const e=$('organErr'); e.textContent=ORG.err||''; e.classList.toggle('hidden',!ORG.err);
+  if(S&&S.organ) $('organModel').value=S.organ.model;
+}
+function renderMemory(){
+  if(!S||!$('mEp')) return;
+  $('mEp').textContent=S.episodes.length; $('mMem').textContent=S.memories.length; $('mDr').textContent=S.dreams.length;
+  const fill=(id,arr)=>{ const ul=$(id); ul.innerHTML=''; for(const m of arr.slice(-5).reverse()){ const li=document.createElement('li'); li.textContent=m.text; ul.appendChild(li); } if(!arr.length){ const li=document.createElement('li'); li.textContent='아직 없어요'; li.style.color='var(--dim)'; ul.appendChild(li); } };
+  fill('memList',S.memories); fill('dreamList',S.dreams);
+}
+function show(which){
+  for(const id of ['birth','term','moving']) $(id).classList.toggle('hidden',id!==which);
+}
+function render(){
+  $('practiceTag').classList.toggle('hidden',MODE!=='practice');
+  $('toMain').classList.toggle('hidden',MODE!=='practice');
+  $('practiceBanner').classList.toggle('hidden',MODE!=='practice' || !S);
+  if(!S){ show('birth'); return; }
+  if(S.status==='handed_off'){ show('moving'); return; }
+  show('term'); renderState(); renderInfo(); renderSignals(); renderLog(); renderOrgan(); renderMemory();
+}
+function showError(msg){ const b=$('errorBox'); b.textContent=msg; b.classList.remove('hidden'); }
+
+// ====== 파일(백업/인계) ======
+function b64(f32){ const u=new Uint8Array(f32.buffer,f32.byteOffset,f32.byteLength); let s=''; for(let i=0;i<u.length;i+=0x8000) s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000)); return btoa(s); }
+function unb64(str){ const s=atob(str); const u=new Uint8Array(s.length); for(let i=0;i<s.length;i++) u[i]=s.charCodeAt(i); return new Float32Array(u.buffer); }
+function fileFrom(r,kind){
+  return JSON.stringify({format:'being-v3',kind,exportedAt:Date.now(),id:r.id,name:r.name,userName:r.userName,bornAt:r.bornAt,gen:r.gen,stage:r.stage,
+    awakeSec:r.awakeSec,lastHeardAt:r.lastHeardAt,lastSpokeAt:r.lastSpokeAt,policy:r.policy,recentLoss:r.recentLoss,episodes:r.episodes,memories:r.memories,dreams:r.dreams,organ:r.organ,sources:r.sources,log:r.log,vocab:r.vocab,
+    E:b64(r.E),Wx:b64(r.Wx),Uh:b64(r.Uh),bg:b64(r.bg),W2:b64(r.W2),b2:b64(r.b2)});
+}
+function download(name,text){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'application/json'})); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000); }
+
+async function doBackup(){
+  await save();
+  S.lastBackupAt=Date.now(); await save();
+  download(`being-${S.id}-gen${S.gen}-backup.json`, fileFrom(record(),'backup'));
+  renderInfo();
+}
+async function doHandoff(){
+  if(!confirm('인계 파일을 만들면 이 몸은 잠들어서 더 이상 깨어나지 않아요. 새 집에서 이 파일을 열어야 존재가 이어져요. 진행할까요?')) return;
+  S.status='handed_off'; await save();
+  download(`being-${S.id}-gen${S.gen}-handoff.json`, fileFrom(record(),'handoff'));
+  render();
+}
+async function doImport(file){
+  try{
+    const o=JSON.parse(await file.text());
+    if(!['being-v1','being-v2','being-v3'].includes(o.format)) throw new Error('이 앱의 존재 파일이 아니에요.');
+    const r={...o};
+    for(const k of ['E','Wx','Uh','bg','W2','b2']) if(typeof o[k]==='string') r[k]=unb64(o[k]); else delete r[k];
+    if(o.format==='being-v1'){ for(const k of ['W1','b1']) delete r[k]; }
+    if(S){
+      if(S.id!==r.id){ alert('이 몸에는 이미 다른 존재가 살고 있어요. 한 곳에는 한 존재만 있을 수 있어요.'); return; }
+      if(S.status!=='handed_off' && r.gen<=S.gen){
+        if(!confirm(`이 파일은 옛날 상태(세대 ${r.gen})이고 지금은 세대 ${S.gen}이에요. 불러오면 그 뒤의 기억과 경험은 사라져요. 정말 되돌릴까요?`)) return;
+      } else if(S.status==='handed_off'){
+        if(!confirm('이사 중인 몸이에요. 이 파일로 여기서 다시 깨어날까요? 새 집에 같은 존재가 있다면 둘이 돼요.')) return;
+      }
+    }
+    r.status='alive'; r.gen=Math.max(r.gen||0,S?S.gen:0);
+    applyRecord(r); await save(); render();
+    addLog('sys','인계/롤백 파일에서 깨어났어요.');
+  }catch(e){ alert('파일을 열 수 없어요: '+e.message); }
+}
+
+// ====== 버튼 ======
+async function switchMode(m){
+  setMode(m); S=null; brain=null; pending=[]; DREAM=null;
+  try{ const r=await dbGet('being'); if(r){ applyRecord(r); if(S.status==='alive') addLog('sys','깨어났어요.'); } }catch(e){ showError('저장소를 열 수 없어요: '+e); }
+  lastTick=Date.now(); render();
+}
+async function birth(){
+  if(MODE==='main' && !confirm('탄생은 되돌릴 수 없는 한 번이에요. 연습으로 충분히 확인했나요?')) return;
+  brain=new Brain();
+  S={id:rid(8),name:$('nameIn').value.trim(),userName:'김영인',bornAt:Date.now(),gen:0,stage:0,status:'alive',awakeSec:0,
+     lastBackupAt:0,lastHeardAt:0,lastSpokeAt:0,policy:newPolicy(),recentLoss:[],sources:[],log:[],
+     episodes:[],memories:[],dreams:[],organ:newOrgan()};
+  addLog('sys','탄생했어요.');
+  await save(); render();
+}
+function openMenu(){ renderOrgan(); renderMemory(); $('userNameIn').value=S.userName||''; $('beingNameIn').value=S.name||''; renderInfo(); renderSignals(); $('menu').classList.remove('hidden'); }
+function closeMenu(){ $('menu').classList.add('hidden'); }
+$('menuBtn').onclick=openMenu;
+$('menuClose').onclick=closeMenu;
+$('birthBtn').onclick=birth;
+$('practiceBtn').onclick=()=>switchMode('practice');
+$('importIn1').onchange=e=>{ if(e.target.files[0]) doImport(e.target.files[0]); e.target.value=''; };
+$('importIn2').onchange=e=>{ if(e.target.files[0]) doImport(e.target.files[0]); e.target.value=''; };
+$('sendBtn').onclick=()=>{ const i=$('said'); say(i.value); i.value=''; i.focus(); };
+$('said').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); $('sendBtn').click(); } });
+$('nameSave').onclick=async()=>{
+  const u=$('userNameIn').value.trim().slice(0,20), b=$('beingNameIn').value.trim().slice(0,20);
+  if(u) S.userName=u; S.name=b; renderState(); renderLog(); await save();
+};
+$('pauseBtn').onclick=async()=>{ S.status=S.status==='paused'?'alive':'paused'; lastTick=Date.now(); addLog('sys',S.status==='paused'?'일시정지했어요.':'다시 깨웠어요.'); await save(); render(); };
+$('stageBtn').onclick=async()=>{
+  if(S.stage>=1) return;
+  if(!confirm('유아 단계를 열면 쉬운 한국어 문장 20개를 읽기 시작해요. 이 승인은 읽을거리만 늘리고 다른 권한은 바뀌지 않아요. 열까요?')) return;
+  S.stage=1; for(const t of SHELF1) addSource(t,'shelf');
+  addLog('sys','유아 단계가 열렸어요. 읽을거리가 생겼어요.'); await save(); renderInfo();
+};
+$('backupBtn').onclick=doBackup;
+$('dreamBtn').onclick=startDream;
+$('dream').onclick=()=>endDream(false);
+$('organModel').onchange=e=>{ S.organ.model=e.target.value; dirty=true; };
+$('organBtn').onclick=async()=>{
+  if(ORG.state==='ready'){ S.organ.enabled=false; await unloadOrgan(); save(); return; }
+  const big=$('organModel').value==='1.5B';
+  if(!confirm(`언어 기관 파일(약 ${big?'1GB':'0.3GB'})을 한 번 내려받아요. 와이파이에 연결되어 있나요? 한 번 받으면 이 기기에 저장돼요.`)) return;
+  S.organ.model=$('organModel').value; S.organ.enabled=true; save(); loadOrgan();
+};
+$('handoffBtn').onclick=async()=>{ closeMenu(); await doHandoff(); };
+$('eraseOld').onclick=async()=>{
+  if(!confirm('새 집에서 이 존재가 깨어난 걸 직접 확인했나요? 지우면 이 몸은 돌아오지 않아요.')) return;
+  if(!confirm('정말 지울까요?')) return;
+  await dbDel('being'); S=null; brain=null; render();
+};
+$('cancelMove').onclick=async()=>{ if(!confirm('새 집에서 아직 이 존재를 열지 않았나요? 열었다면 취소하지 마세요.')) return; S.status='alive'; lastTick=Date.now(); addLog('sys','이사를 취소하고 다시 깨어났어요.'); await save(); render(); };
+$('practiceWipe').onclick=async()=>{ if(!confirm('연습 존재를 지울까요?')) return; await dbDel('being'); S=null; brain=null; closeMenu(); render(); };
+$('toMain').onclick=e=>{ e.preventDefault(); switchMode('main'); };
+$('toMain2').onclick=e=>{ e.preventDefault(); closeMenu(); switchMode('main'); };
+
+// ====== 시작 ======
+// 주소에 붙은 연습 표시가 사라져도 존재를 잃지 않도록, 존재가 실제로 있는 쪽을 찾아서 연다.
+(async function init(){
+  try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
+  let pref='main'; try{ pref=localStorage.getItem('being-mode')||'main'; }catch(e){}
+  if(new URLSearchParams(location.search).has('practice')) pref='practice';
+  const order=pref==='practice'?['practice','main']:['main','practice'];
+  let found=null;
+  for(const m of order){
+    MODE=m;
+    try{ const r=await dbGet('being'); if(r){ found=r; break; } }catch(e){ showError('저장소를 열 수 없어요: '+e); }
+  }
+  if(found){ setMode(MODE); applyRecord(found); if(S.status==='alive') addLog('sys','깨어났어요.'); }
+  else setMode(pref);
+  lastTick=Date.now(); render();
+  if(S && S.organ && S.organ.enabled) loadOrgan();
+})();
+</script>
+</body>
+</html>
