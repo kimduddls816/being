@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<title>사진 촬영물 사용 동의서</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="촬영 동의서">
+<style>
+:root{--ink:#111;--mute:#777;--bg:#eceae6}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+.langbar{display:flex;gap:6px;margin-bottom:12px}
+.langbar button{flex:1;min-width:0;font-size:14px;font-weight:500;padding:10px 2px;white-space:nowrap;border-radius:10px;border:1.5px solid #bbb;color:#444;background:#fff}
+.langbar button.on{background:#111;color:#fff;border-color:#111;font-weight:700}
+/* A4 한 장: 1240 x 1754 고정 좌표계를 화면 너비에 맞춰 통째로 축소 */
+#stage{position:relative;width:100%;overflow:hidden;box-shadow:0 2px 14px rgba(0,0,0,.14);background:#fff}
+#paper{position:absolute;left:0;top:0;width:1240px;height:1754px;background:#fff;transform-origin:0 0}
+#paper>*{position:absolute}
+#txt{left:0;top:0;width:1240px;height:0}
+#txt div{position:absolute;white-space:nowrap;line-height:1}
+#txt div.k{cursor:pointer}
+.rule{left:150px;top:380px;width:940px;height:5px;background:#111}
+#paper>input[type=text],#paper>input[type=tel]{width:700px;height:70px;border:0;border-bottom:2.5px solid #111;border-radius:0;background:transparent;color:#111;font:inherit;font-size:40px;padding:0 4px;outline:none;margin:0;text-align:start}
+#paper>input:focus{border-bottom-width:5px}
+#paper input::placeholder{color:#c4c4c4}
+#portrait{top:881px;width:38px;height:38px;margin:0;padding:0;accent-color:#111;cursor:pointer}
+.dsel{top:1263px;width:700px;height:70px;border-bottom:2.5px solid #111;display:flex;gap:6px;align-items:center;font-size:40px}
+.dsel span{margin-right:16px;min-width:8px}
+.dsel input[type=text]{height:58px;border:0;border-radius:8px;padding:0;margin:0;text-align:center;background:#f3f2ef;color:#111;font:inherit;font-size:40px;outline:none}
+.dsel input[type=text]:focus{background:#e2e0da}
+.cal{position:relative;margin-left:auto;width:64px;height:60px;display:flex;align-items:center;justify-content:center;border:2px solid #111;border-radius:10px;cursor:pointer;overflow:hidden}
+.cal input{position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:16px;border:0;margin:0;padding:0}
+.dsel.r .cal{order:-1;margin-left:0;margin-right:auto}
+.dsel.r span:last-of-type{margin-right:0}
+.sigbox{top:1375px;width:700px;height:215px;border:2.5px solid #111}
+#pad{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
+.hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#c4c4c4;font-size:30px;pointer-events:none}
+.bar{display:flex;gap:10px;margin-top:14px}
+button{font:inherit;font-size:17px;font-weight:700;border-radius:12px;padding:15px 18px;border:1.5px solid #111;background:#fff;color:#111;cursor:pointer}
+button.main{flex:1;background:#111;color:#fff}
+button.sub{flex:1;border-color:#999;color:#555;font-weight:500;font-size:15px}
+button:active{transform:scale(.98)}
+.opt{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:14px;font-size:15px;color:#444}
+.opt input{width:22px;height:22px;accent-color:#111;margin:0;flex:none}
+.msg{text-align:center;min-height:22px;margin-top:12px;font-size:15px}
+.msg.err{color:#b3261e}.msg.ok{color:#1b6b34}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="langbar" id="langbar">
+    <button data-lang="ko">한국어</button><button data-lang="en">English</button><button data-lang="zh">中文</button><button data-lang="ja">日本語</button><button data-lang="ar">العربية</button>
+  </div>
+  <div id="stage"><div id="paper">
+    <div id="txt"></div>
+    <div class="rule"></div>
+    <input type="checkbox" id="portrait">
+    <input id="photog" type="text" autocomplete="off" style="top:948px">
+    <input id="name" type="text" autocomplete="off" style="top:1053px">
+    <input id="phone" type="tel" inputmode="tel" autocomplete="off" maxlength="20" dir="ltr" style="top:1158px">
+    <div class="dsel" id="dsel" dir="ltr">
+      <input id="dy" type="text" inputmode="numeric" maxlength="4" autocomplete="off" style="width:128px"><span id="u1"></span>
+      <input id="dm" type="text" inputmode="numeric" maxlength="2" autocomplete="off" style="width:72px"><span id="u2"></span>
+      <input id="dd" type="text" inputmode="numeric" maxlength="2" autocomplete="off" style="width:72px"><span id="u3"></span>
+      <div class="cal" id="cal"><svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="#111" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><input id="dpick" type="date" min="0001-01-01" max="9999-12-31"></div>
+    </div>
+    <div class="sigbox" id="sigbox"><canvas id="pad" width="1400" height="430"></canvas><div class="hint" id="hint"></div></div>
+  </div></div>
+
+  <div class="bar ui">
+    <button id="clear"></button>
+    <button id="save" class="main"></button>
+  </div>
+  <div class="bar ui" style="margin-top:10px"><button id="reset" class="sub"></button></div>
+  <label class="opt ui"><input type="checkbox" id="remember"> <span id="remlab"></span></label>
+  <div class="msg ui" id="msg"></div>
+</div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const PW=1240, PH=1754, BW=700, BY=1375, BH=215;
+  const ROWS={photog:1000, name:1105, phone:1210, date:1315, sig:1415};
+  const BASE='"Segoe UI","Noto Sans","Noto Sans Arabic","Geeza Pro",system-ui,sans-serif';
+  const KR='-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic",';
+  const SC='"PingFang SC","Noto Sans SC","Noto Sans CJK SC","Microsoft YaHei",';
+  const JP='"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Noto Sans CJK JP","Yu Gothic","Meiryo",';
+  const p2=n=>String(+n).padStart(2,'0');
+
+  // ---------- 언어 ----------
+  const T={
+    ko:{code:'ko', font:KR+BASE, title:'사진 촬영물 사용 동의서',
+      body:['본 사진촬영 결과물에 대해','촬영자 {p}이(가) 포트폴리오로 사용 가능하고,','향후 상업·홍보적 용도의 예시사진으로','인스타그램 및 기타 플랫폼 업로드에','사용 가능함에 동의합니다.'],
+      chkA:'초상권 사용 동의', chkB:'본인의 초상이 담긴 위 촬영물의 사용에 동의합니다.',
+      lab:{photog:'촬영자', name:'동의자 성명', phone:'전화번호', date:'촬영일', sig:'서명'},
+      foot:'본 동의서는 무료 및 유료 촬영에 대한 사진 사용 동의 목적으로 작성되었습니다.', seal:'(인)',
+      units:['년','월','일'], date:(y,m,d)=>y+'년 '+m+'월 '+d+'일',
+      phPhotog:'촬영자 이름', phName:'동의자 이름', phPhone:'010-0000-0000', hint:'여기에 서명해 주세요',
+      clear:'서명 지우기', save:'PDF로 저장', reset:'다음 사람 · 새로 작성', remember:'촬영자 이름 기억하기 (다음에 열 때 자동 입력)', file:'동의서',
+      m:{photog:'촬영자 이름을 입력해 주세요.', name:'동의자 성명을 입력해 주세요.', phone:'전화번호를 입력해 주세요.', badPhone:'전화번호를 확인해 주세요.', chk:'초상권 사용 동의 항목에 체크해 주세요.', date:'촬영일을 입력해 주세요.', dateFix:'없는 날짜라서 바로잡았습니다. 촬영일을 확인하고 다시 저장해 주세요.', sig:'서명란에 서명해 주세요.', saved:'저장했습니다 · ', cancel:'저장을 취소했습니다.', fail:'저장하지 못했습니다. 다시 시도해 주세요.'}},
+    en:{code:'en', font:BASE.replace('"Segoe UI",','-apple-system,"Segoe UI",'), title:'Photo Release Consent Form',
+      body:['I agree that the photographs from this shoot','may be used by the photographer, {p},','in their portfolio, and may be uploaded to','Instagram and other platforms as sample images','for commercial and promotional purposes.'],
+      chkA:'Portrait rights consent', chkB:'I consent to the use of my likeness in these photographs.',
+      lab:{photog:'Photographer', name:'Full name', phone:'Phone', date:'Shoot date', sig:'Signature'},
+      foot:'This form records consent to the use of photographs from free and paid shoots.', seal:'(sign)',
+      units:['/','/',''], date:(y,m,d)=>y+'/'+p2(m)+'/'+p2(d),
+      phPhotog:'Photographer’s name', phName:'Your name', phPhone:'+00 000 000 0000', hint:'Sign here',
+      clear:'Clear signature', save:'Save as PDF', reset:'Next person · Start over', remember:'Remember the photographer’s name (fill it in next time)', file:'Consent',
+      m:{photog:'Please enter the photographer’s name.', name:'Please enter your name.', phone:'Please enter a phone number.', badPhone:'Please check the phone number.', chk:'Please tick the portrait rights consent box.', date:'Please enter the shoot date.', dateFix:'That date does not exist, so it was corrected. Please check the shoot date and save again.', sig:'Please sign in the signature box.', saved:'Saved · ', cancel:'Save cancelled.', fail:'Could not save. Please try again.'}},
+    zh:{code:'zh-Hans', font:SC+BASE, title:'摄影作品使用同意书',
+      body:['本人同意，本次拍摄的照片','可由摄影师{p}用于作品集，','并可作为商业及宣传用途的示例照片','上传至 Instagram 及其他平台。'],
+      chkA:'肖像权使用同意', chkB:'本人同意使用上述含有本人肖像的照片。',
+      lab:{photog:'摄影师', name:'同意人姓名', phone:'电话号码', date:'拍摄日期', sig:'签名'},
+      foot:'本同意书用于确认免费及付费拍摄照片的使用同意。', seal:'(签名)',
+      units:['年','月','日'], date:(y,m,d)=>y+'年'+m+'月'+d+'日',
+      phPhotog:'摄影师姓名', phName:'同意人姓名', phPhone:'+00 000 000 0000', hint:'请在此签名',
+      clear:'清除签名', save:'保存为 PDF', reset:'下一位 · 重新填写', remember:'记住摄影师姓名（下次打开时自动填写）', file:'同意书',
+      m:{photog:'请输入摄影师姓名。', name:'请输入同意人姓名。', phone:'请输入电话号码。', badPhone:'请检查电话号码。', chk:'请勾选肖像权使用同意。', date:'请输入拍摄日期。', dateFix:'该日期不存在，已自动更正。请确认拍摄日期后重新保存。', sig:'请在签名栏签名。', saved:'已保存 · ', cancel:'已取消保存。', fail:'保存失败，请重试。'}},
+    ja:{code:'ja', font:JP+BASE, title:'写真使用同意書',
+      body:['本撮影の写真について、','撮影者{p}がポートフォリオとして使用すること、','および商業・宣伝目的のサンプル写真として','Instagramその他のプラットフォームに','掲載することに同意します。'],
+      chkA:'肖像権使用同意', chkB:'本人の肖像が写った上記写真の使用に同意します。',
+      lab:{photog:'撮影者', name:'同意者氏名', phone:'電話番号', date:'撮影日', sig:'署名'},
+      foot:'本同意書は、無料および有料撮影における写真使用の同意を目的として作成されました。', seal:'(印)',
+      units:['年','月','日'], date:(y,m,d)=>y+'年'+m+'月'+d+'日',
+      phPhotog:'撮影者名', phName:'同意者名', phPhone:'+00 000 000 0000', hint:'ここに署名してください',
+      clear:'署名を消去', save:'PDFで保存', reset:'次の方 · 新規作成', remember:'撮影者名を記憶する（次回自動入力）', file:'同意書',
+      m:{photog:'撮影者名を入力してください。', name:'同意者氏名を入力してください。', phone:'電話番号を入力してください。', badPhone:'電話番号をご確認ください。', chk:'肖像権使用同意にチェックを入れてください。', date:'撮影日を入力してください。', dateFix:'存在しない日付のため修正しました。撮影日を確認して、もう一度保存してください。', sig:'署名欄に署名してください。', saved:'保存しました · ', cancel:'保存をキャンセルしました。', fail:'保存できませんでした。もう一度お試しください。'}},
+    ar:{code:'ar', rtl:true, font:BASE.replace('"Segoe UI",','-apple-system,"Segoe UI",'), title:'نموذج الموافقة على استخدام الصور',
+      body:['أوافق على أن الصور الناتجة عن جلسة التصوير هذه','يجوز للمصوّر {p} استخدامها في معرض أعماله،','ويجوز نشرها على إنستغرام والمنصات الأخرى','كصور نموذجية لأغراض تجارية وترويجية.'],
+      chkA:'الموافقة على استخدام الصورة الشخصية', chkB:'أوافق على استخدام صورتي الظاهرة في هذه الصور.',
+      lab:{photog:'المصوّر', name:'اسم الموافق', phone:'رقم الهاتف', date:'تاريخ التصوير', sig:'التوقيع'},
+      foot:'أُعدّ هذا النموذج لتوثيق الموافقة على استخدام صور جلسات التصوير المجانية والمدفوعة.', seal:'(التوقيع)',
+      units:['/','/',''], date:(y,m,d)=>y+'/'+p2(m)+'/'+p2(d),
+      phPhotog:'اسم المصوّر', phName:'اسم الموافق', phPhone:'+00 000 000 0000', hint:'وقّع هنا',
+      clear:'مسح التوقيع', save:'حفظ بصيغة PDF', reset:'الشخص التالي · نموذج جديد', remember:'تذكّر اسم المصوّر (يُملأ تلقائيًا في المرة القادمة)', file:'موافقة',
+      m:{photog:'يرجى إدخال اسم المصوّر.', name:'يرجى إدخال اسمك.', phone:'يرجى إدخال رقم الهاتف.', badPhone:'يرجى التحقق من رقم الهاتف.', chk:'يرجى وضع علامة على خانة الموافقة على استخدام الصورة الشخصية.', date:'يرجى إدخال تاريخ التصوير.', dateFix:'هذا التاريخ غير موجود، فتم تصحيحه. يرجى التحقق من تاريخ التصوير ثم الحفظ مرة أخرى.', sig:'يرجى التوقيع في خانة التوقيع.', saved:'تم الحفظ · ', cancel:'تم إلغاء الحفظ.', fail:'تعذّر الحفظ. حاول مرة أخرى.'}}
+  };
+  let lang='ko', L=T.ko, rtl=false, FX=390, doc=null;
+  try{ const v=localStorage.getItem('lang'); if(v && T[v]) lang=v; else { const n=(navigator.language||'ko').toLowerCase(); lang = n.startsWith('ko')?'ko' : n.startsWith('zh')?'zh' : n.startsWith('ja')?'ja' : n.startsWith('ar')?'ar' : n.startsWith('en')?'en' : 'ko'; } }catch(e){}
+
+  const stage=$('stage'), paper=$('paper'), pad=$('pad'), ctx=pad.getContext('2d');
+  let strokes=[], cur=null, penSeen=false, lastMsg=null;
+
+  function fit(){ const s=stage.clientWidth/PW; paper.style.transform='scale('+s+')'; stage.style.height=(PH*s)+'px'; }
+  window.addEventListener('resize',fit); window.addEventListener('orientationchange',fit); fit();
+
+  // ---------- 문서 배치: 화면과 PDF가 같은 계산을 씀 ----------
+  const mc=document.createElement('canvas').getContext('2d');
+  function setDir(g,d){ try{ g.direction=d; }catch(e){} }
+  function width(t,w,s){ mc.font=w+' '+s+'px '+L.font; return mc.measureText(t).width; }
+  function fitSize(t,w,s,maxW,min){ while(s>min && width(t,w,s)>maxW) s-=1; return s; }
+  function buildDoc(){
+    const it=[], dir=rtl?'rtl':'ltr', pn=$('photog').value.trim() || '   ';
+    const add=(t,x,y,s,w,a,c,k)=>it.push({t,x,y,s,w,a,c:c||'#111',k:!!k});
+    add(L.title,PW/2,322,fitSize(L.title,700,68,940,36),700,'center');
+    const lines=L.body.map(l=>l.replace('{p}',pn));
+    let bs=40; lines.forEach(l=>{ bs=Math.min(bs,fitSize(l,400,40,940,22)); });
+    const lh=bs*2, y0=665-(lines.length-1)*lh/2;
+    lines.forEach((l,i)=>add(l,PW/2,y0+i*lh,bs,400,'center'));
+    // 초상권 동의 줄
+    const sep=' · '; let cs=30, tot;
+    for(;;){ tot=36+16+width(L.chkA,700,cs)+width(sep+L.chkB,400,cs); if(tot<=980||cs<=18) break; cs-=1; }
+    const wa=width(L.chkA,700,cs), x0=(PW-tot)/2, cy=900+cs*0.36;
+    let boxX;
+    if(!rtl){ boxX=x0; add(L.chkA,x0+52,cy,cs,700,'left',0,1); add(sep+L.chkB,x0+52+wa,cy,cs,400,'left',0,1); }
+    else { boxX=x0+tot-36; add(L.chkA,x0+tot-52,cy,cs,700,'right',0,1); add(sep+L.chkB,x0+tot-52-wa,cy,cs,400,'right',0,1); }
+    // 항목 이름
+    Object.keys(ROWS).forEach(k=>{ const t=L.lab[k]; add(t, rtl?1090:150, ROWS[k], fitSize(t,700,34,225,18), 700, rtl?'right':'left'); });
+    add(L.seal, rtl?FX+12:FX+BW-12, BY+BH-12, 24, 400, rtl?'left':'right', '#777');
+    add(L.foot,PW/2,1671,fitSize(L.foot,400,26,1040,16),400,'center','#777');
+    return {items:it, boxX, dir};
+  }
+  function paint(){
+    doc=buildDoc();
+    const box=$('txt'); box.textContent='';
+    doc.items.forEach(o=>{
+      const d=document.createElement('div'); d.textContent=o.t; d.dir=doc.dir;
+      mc.font=o.w+' '+o.s+'px '+L.font; const m=mc.measureText(o.t);
+      const A=m.fontBoundingBoxAscent, D=m.fontBoundingBoxDescent;
+      const top = (A>0 && D>=0) ? o.y-A-(o.s-A-D)/2 : o.y-o.s*0.875;
+      d.style.cssText='top:'+top+'px;font-size:'+o.s+'px;font-weight:'+o.w+';color:'+o.c+';'+
+        (o.a==='center' ? 'left:0;width:'+PW+'px;text-align:center' : o.a==='left' ? 'left:'+o.x+'px' : 'right:'+(PW-o.x)+'px');
+      if(o.k){ d.className='k'; d.onclick=()=>{ $('portrait').checked=!$('portrait').checked; }; }
+      box.appendChild(d);
+    });
+    $('portrait').style.left=(doc.boxX-1)+'px';
+  }
+  function applyLang(){
+    L=T[lang]; rtl=!!L.rtl; FX=rtl?150:390;
+    document.documentElement.lang=L.code; document.title=L.title;
+    paper.dir=rtl?'rtl':'ltr'; paper.style.fontFamily=L.font; document.body.style.fontFamily=L.font;
+    ['photog','name','phone','dsel','sigbox'].forEach(id=>{ $(id).style.left=FX+'px'; });
+    $('phone').style.textAlign=rtl?'right':'left'; $('dsel').classList.toggle('r',rtl);
+    $('photog').placeholder=L.phPhotog; $('name').placeholder=L.phName; $('phone').placeholder=L.phPhone;
+    $('u1').textContent=L.units[0]; $('u2').textContent=L.units[1]; $('u3').textContent=L.units[2];
+    $('hint').textContent=L.hint; $('clear').textContent=L.clear; $('save').textContent=L.save; $('reset').textContent=L.reset; $('remlab').textContent=L.remember;
+    document.querySelectorAll('.ui').forEach(e=>{ e.dir=rtl?'rtl':'ltr'; });
+    document.querySelectorAll('#langbar button').forEach(b=>b.classList.toggle('on',b.dataset.lang===lang));
+    if(lastMsg) setMsg(lastMsg.k,lastMsg.c,lastMsg.x);
+    paint();
+  }
+  function setLang(v){ if(!T[v]) return; lang=v; try{ localStorage.setItem('lang',v); }catch(e){} applyLang(); }
+  document.querySelectorAll('#langbar button').forEach(b=>{ b.onclick=()=>setLang(b.dataset.lang); });
+  window.__setLang=setLang;
+
+  function setMsg(k,c,x){ const m=$('msg'); if(!k){ lastMsg=null; m.textContent=''; m.className='msg ui'; return; } lastMsg={k,c,x}; m.textContent=L.m[k]+(x||''); m.className='msg ui '+(c||''); m.dir=rtl?'rtl':'ltr'; }
+
+  // ---------- 촬영일: 직접 입력 + 달력 선택 ----------
+  const dy=$('dy'), dm=$('dm'), dd=$('dd'), dpick=$('dpick');
+  function setToday(){ const d=new Date(); dy.value=d.getFullYear(); dm.value=d.getMonth()+1; dd.value=d.getDate(); }
+  // 전각 숫자·아랍 숫자도 일반 숫자로 바꿔 받음
+  function ascii(v){ return String(v).replace(/[\uFF10-\uFF19]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace(/[\u0660-\u0669]/g,c=>c.charCodeAt(0)-0x660).replace(/[\u06F0-\u06F9]/g,c=>c.charCodeAt(0)-0x6F0); }
+  function digits(el){ const v=ascii(el.value).replace(/\D/g,''); if(v!==el.value) el.value=v; return v; }
+  function lastDay(y,m){ const t=new Date(2000,m-1,1); t.setFullYear(y); t.setMonth(m); t.setDate(0); return t.getDate(); }
+  // 빈칸·공백·없는 날짜를 정리. 'empty' | 'fixed' | 'ok'
+  function normDate(){
+    const a=digits(dy), b=digits(dm), c=digits(dd);
+    if(!a||!b||!c) return 'empty';
+    const y=Math.min(Math.max(+a,1),9999), m=Math.min(Math.max(+b,1),12), d=Math.min(Math.max(+c,1),lastDay(y,m));
+    const fixed = (y!==+a)||(m!==+b)||(d!==+c);
+    dy.value=y; dm.value=m; dd.value=d;
+    return fixed?'fixed':'ok';
+  }
+  function dateOk(){ return normDate()!=='empty'; }
+  function iso(){ return String(+dy.value).padStart(4,'0')+'-'+p2(dm.value)+'-'+p2(dd.value); }
+  [dy,dm,dd].forEach(el=>{
+    el.addEventListener('input',e=>{ if(!e.isComposing) digits(el); });
+    el.addEventListener('compositionend',()=>digits(el));
+    el.addEventListener('focus',()=>{ try{ el.select(); }catch(_){} });
+    el.addEventListener('blur',()=>{ setTimeout(()=>{ const a=document.activeElement; if(a===dy||a===dm||a===dd) return; if(normDate()==='fixed') setMsg('dateFix','err'); else if(lastMsg && (lastMsg.k==='dateFix'||lastMsg.k==='date')) setMsg(); },0); });
+  });
+  dpick.addEventListener('change',()=>{ const m=/^(\d{4,})-(\d{2})-(\d{2})$/.exec(dpick.value); if(m){ dy.value=+m[1]; dm.value=+m[2]; dd.value=+m[3]; if(lastMsg && (lastMsg.k==='dateFix'||lastMsg.k==='date')) setMsg(); } });
+  $('cal').addEventListener('click',()=>{ if(normDate()!=='empty') dpick.value=iso(); try{ dpick.showPicker(); }catch(_){} });
+  setToday();
+
+  // ---------- 촬영자 이름 기억 (기본 꺼짐) ----------
+  const rem=$('remember');
+  function store(){ try{ if(rem.checked){ localStorage.setItem('remember','1'); localStorage.setItem('photog',$('photog').value.trim()); } else { localStorage.removeItem('remember'); localStorage.removeItem('photog'); } }catch(e){} }
+  try{ rem.checked = localStorage.getItem('remember')==='1'; if(rem.checked){ const v=localStorage.getItem('photog'); if(v) $('photog').value=v; } else localStorage.removeItem('photog'); }catch(e){}
+  rem.addEventListener('change',store);
+  $('photog').addEventListener('input',()=>{ paint(); store(); });
+
+  // ---------- 서명 (좌표는 0~1로 저장) ----------
+  function lw(p){ return 2.6 + (p.p>0 ? p.p : 0.5)*4.6; }
+  function drawStroke(c,s,W,H,k){
+    if(!s.length) return;
+    c.lineCap='round'; c.lineJoin='round'; c.strokeStyle='#111'; c.fillStyle='#111';
+    if(s.length===1){ c.beginPath(); c.arc(s[0].x*W,s[0].y*H,lw(s[0])*k/2,0,7); c.fill(); return; }
+    for(let i=1;i<s.length;i++){
+      c.lineWidth=(lw(s[i-1])+lw(s[i]))/2*k;
+      c.beginPath(); c.moveTo(s[i-1].x*W,s[i-1].y*H); c.lineTo(s[i].x*W,s[i].y*H); c.stroke();
+    }
+  }
+  function redraw(){
+    ctx.clearRect(0,0,pad.width,pad.height);
+    strokes.forEach(s=>drawStroke(ctx,s,pad.width,pad.height,pad.width/BW));
+    $('hint').style.display = strokes.length ? 'none' : 'flex';
+  }
+  function pt(e){ const r=pad.getBoundingClientRect(); return {x:(e.clientX-r.left)/r.width, y:(e.clientY-r.top)/r.height, p:e.pressure}; }
+  pad.addEventListener('pointerdown',e=>{
+    if(e.pointerType==='pen') penSeen=true;
+    if(e.pointerType==='touch' && penSeen) return;
+    e.preventDefault(); try{ pad.setPointerCapture(e.pointerId); }catch(_){}
+    cur=[pt(e)]; strokes.push(cur); redraw();
+  });
+  pad.addEventListener('pointermove',e=>{
+    if(!cur) return; e.preventDefault();
+    let evs=[]; try{ evs = e.getCoalescedEvents ? e.getCoalescedEvents() : []; }catch(_){}
+    (evs.length?evs:[e]).forEach(ev=>cur.push(pt(ev))); redraw();
+  });
+  const end=()=>{ cur=null; };
+  pad.addEventListener('pointerup',end); pad.addEventListener('pointercancel',end);
+
+  $('clear').onclick=()=>{ strokes=[]; redraw(); setMsg(); };
+  $('reset').onclick=()=>{ strokes=[]; $('name').value=''; $('phone').value=''; $('portrait').checked=false; if(!rem.checked) $('photog').value=''; setToday(); redraw(); paint(); setMsg(); window.scrollTo({top:0,behavior:'smooth'}); };
+
+  // ---------- PDF ----------
+  function render(){
+    doc=buildDoc();
+    const c=document.createElement('canvas'); c.width=PW; c.height=PH;
+    const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,PW,PH); g.textBaseline='alphabetic';
+    g.fillStyle='#111'; g.fillRect(150,380,940,5);
+    doc.items.forEach(o=>{ g.font=o.w+' '+o.s+'px '+L.font; g.textAlign=o.a; setDir(g,doc.dir); g.fillStyle=o.c; g.fillText(o.t,o.x,o.y); });
+    // 체크 상자
+    const bx=doc.boxX; g.lineWidth=2.5; g.strokeStyle='#111'; g.strokeRect(bx,882,36,36);
+    if($('portrait').checked){ g.lineWidth=5; g.lineCap='round'; g.lineJoin='round'; g.beginPath(); g.moveTo(bx+8,901); g.lineTo(bx+16,909); g.lineTo(bx+29,892); g.stroke(); }
+    // 입력값
+    const val=(t,y,ltr)=>{ g.font='400 40px '+L.font; g.fillStyle='#111'; setDir(g, ltr?'ltr':doc.dir); g.textAlign=rtl?'right':'left'; g.fillText(t, rtl?FX+BW-4:FX+4, y-3, BW-8); g.fillRect(FX,y+18,BW,2.5); };
+    val($('photog').value.trim(),ROWS.photog); val($('name').value.trim(),ROWS.name);
+    val($('phone').value.trim(),ROWS.phone,true); val(L.date(+dy.value,+dm.value,+dd.value),ROWS.date,true);
+    // 서명
+    g.lineWidth=2.5; g.strokeStyle='#111'; g.strokeRect(FX,BY,BW,BH);
+    g.save(); g.translate(FX,BY); g.beginPath(); g.rect(0,0,BW,BH); g.clip();
+    strokes.forEach(s=>drawStroke(g,s,BW,BH,1)); g.restore();
+    return c;
+  }
+  function pdfFromCanvas(c){
+    const bin=atob(c.toDataURL('image/jpeg',0.92).split(',')[1]), jpg=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) jpg[i]=bin.charCodeAt(i);
+    const enc=new TextEncoder(), parts=[], offs=[]; let len=0;
+    const push=d=>{ const u=typeof d==='string'?enc.encode(d):d; parts.push(u); len+=u.length; };
+    const obj=(n,body)=>{ offs[n]=len; push(n+' 0 obj\n'+body+'\nendobj\n'); };
+    push('%PDF-1.4\n');
+    obj(1,'<< /Type /Catalog /Pages 2 0 R >>');
+    obj(2,'<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
+    obj(3,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>');
+    offs[4]=len; push('4 0 obj\n<< /Type /XObject /Subtype /Image /Width '+c.width+' /Height '+c.height+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+jpg.length+' >>\nstream\n'); push(jpg); push('\nendstream\nendobj\n');
+    const cs='q 595.28 0 0 841.89 0 0 cm /Im0 Do Q';
+    obj(5,'<< /Length '+cs.length+' >>\nstream\n'+cs+'\nendstream');
+    const xref=len; let x='xref\n0 6\n0000000000 65535 f \n';
+    for(let i=1;i<=5;i++) x+=String(offs[i]).padStart(10,'0')+' 00000 n \n';
+    push(x+'trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n'+xref+'\n%%EOF');
+    return new Blob(parts,{type:'application/pdf'});
+  }
+  window.__makePdf = ()=>pdfFromCanvas(render());   // 점검용
+
+  // Claude 안에서 열렸을 때만 쓰는 저장 통로 (없으면 기기 다운로드)
+  let dl=null;
+  if(window.claude && typeof window.claude.use==='function'){ try{ window.claude.use('downloads').then(v=>{dl=v;},()=>{}); }catch(e){} }
+
+  $('save').onclick = async ()=>{
+    $('phone').value=ascii($('phone').value).trim();
+    const pn=$('photog').value.trim(), name=$('name').value.trim(), ph=$('phone').value, n=ph.replace(/\D/g,'').length;
+    if(!pn){ setMsg('photog','err'); $('photog').focus(); return; }
+    if(!name){ setMsg('name','err'); $('name').focus(); return; }
+    if(!ph){ setMsg('phone','err'); $('phone').focus(); return; }
+    if(!/^[0-9+\-\s()]+$/.test(ph)||n<7||n>15){ setMsg('badPhone','err'); $('phone').focus(); return; }
+    if(!$('portrait').checked){ setMsg('chk','err'); return; }
+    { const r=normDate(); if(r==='empty'){ setMsg('date','err'); return; } if(r==='fixed'){ setMsg('dateFix','err'); return; } }
+    if(!strokes.length){ setMsg('sig','err'); return; }
+    const blob=pdfFromCanvas(render());
+    const filename=L.file+'_'+name.replace(/[\\/:*?"<>|\s]+/g,'')+'_'+iso()+'.pdf';
+    if(dl){
+      try{ await dl.save({filename,data:blob}); setMsg('saved','ok',filename); }
+      catch(e){ if(e && e.code==='declined') setMsg('cancel'); else setMsg('fail','err'); }
+      return;
+    }
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+    setMsg('saved','ok',filename);
+  };
+
+  applyLang(); redraw();
+})();
+</script>
+<script>
+if('serviceWorker' in navigator && location.protocol!=='file:'){ window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }); }
+</script>
+</body>
+</html>
